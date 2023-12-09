@@ -4,6 +4,7 @@ import { responseGenerators } from '../lib';
 import Session from '../model/session.model';
 import { verifyJwt } from '../helpers/jwt.helper';
 import * as dotenv from 'dotenv';
+import { ERROR } from '../common/global-constants';
 dotenv.config();
 export const authentication = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -23,6 +24,6 @@ export const authentication = async (req: Request, res: Response, next: NextFunc
     req.headers.tokenData = tokenData as any;
     next();
   } catch (error) {
-    return res.status(StatusCodes.UNAUTHORIZED).send(responseGenerators({}, StatusCodes.UNAUTHORIZED));
+    return res.status(StatusCodes.UNAUTHORIZED).send(responseGenerators({}, StatusCodes.UNAUTHORIZED , ERROR.ERROR_MESSAGE));
   }
 };

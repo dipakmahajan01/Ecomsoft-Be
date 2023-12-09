@@ -28,4 +28,5 @@ export const RATE_CARD = {
 
 export const ERROR = {
   INTERNAL_SERVER_ERROR: 'something went wrong',
+  ERROR_MESSAGE:"user token expired"
 };
