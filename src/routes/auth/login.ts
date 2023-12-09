@@ -44,6 +44,7 @@ export const loginHandler = async(req:Request, res:Response) => {
     const userData = {
       user_id: user.user_id,
       email: user.email,
+      token:jwtToken
     };
     return res.status(StatusCodes.BAD_REQUEST).send(responseGenerators(userData,StatusCodes.BAD_REQUEST,USER.SUCCESS, false))
   }

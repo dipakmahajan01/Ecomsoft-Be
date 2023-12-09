@@ -4,11 +4,12 @@ export interface ITokenData {
   created_by: string;
 }
 export const USER = {
-    AlREADY:"user already created",
-    CREATED:"user created successfully",
+  AlREADY: 'user already created',
+  CREATED: 'user created successfully',
   NOT_FOUND: 'user not found',
   PASSWORD: 'password does not match please try again',
   SUCCESS: 'user successfully',
+  PASSWORD_UPDATE:"password successfully updated"
 };
 
 export const ERROR = {

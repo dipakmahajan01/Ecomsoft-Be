@@ -9,6 +9,7 @@ import { StatusCodes } from 'http-status-codes';
 import logger from './lib/logger';
 import { responseValidation } from './lib';
 import authRoutes from './routes/auth';
+import sellerRoute from './routes/sellers';
 
 
 dotenv.config();
@@ -179,7 +180,7 @@ app.get('/api/health', health);
  *         description: Something went wrong, please try again later.
  */
 app.use('/api',authRoutes)
-
+app.use('/api/seller',sellerRoute)
 app.use((req: Request, res: Response) => {
   return res
     .status(StatusCodes.INTERNAL_SERVER_ERROR)
