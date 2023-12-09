@@ -182,7 +182,7 @@ app.get('/api/health', health);
 app.use('/api/auth/', authRoutes);
 app.use('/api/marketplace', marketPlaceRoutes);
 app.use('/api/rate-card', rateCardRoutes);
-app.use('/api/seller',sellerRoute)
+app.use('/api/seller', sellerRoute);
 app.use((req: Request, res: Response) => {
   return res
     .status(StatusCodes.INTERNAL_SERVER_ERROR)
