@@ -12,6 +12,20 @@ export const USER = {
   PASSWORD_UPDATE:"password successfully updated"
 };
 
+export const CREDENTIALS = {
+  AlREADY: 'Credentials already exists',
+  CREATED: 'Credentials created successfully',
+  NOT_FOUND: 'Credentials not found',
+  SUCCESS: 'Credentials successfully',
+};
+
+export const RATE_CARD = {
+  AlREADY: 'Rate card already exists',
+  CREATED: 'Rate card created successfully',
+  NOT_FOUND: 'Rate card not found',
+  SUCCESS: 'Rate card successfully',
+};
+
 export const ERROR = {
   INTERNAL_SERVER_ERROR: 'something went wrong',
 };
