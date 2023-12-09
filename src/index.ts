@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import * as bodyParser from 'body-parser';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Request, Response } from 'express'; // NextFunction,
 import http from 'http';
@@ -9,6 +8,7 @@ import { StatusCodes } from 'http-status-codes';
 // import { Server } from 'socket.io';
 import logger from './lib/logger';
 import { responseValidation } from './lib';
+import authRoutes from './routes/auth';
 
 
 dotenv.config();
@@ -16,12 +16,11 @@ dotenv.config();
 const app = express();
 
 const server = new http.Server(app);
-app.use(cors());
+// app.use(cors());
 // const io = new Server(server,{cors: {origin: "*"}});
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
 app.use((req, res, next) => {
   try {
 
@@ -60,6 +59,7 @@ const health = (req: Request, res: Response) => {
 };
 
 app.get('/', health);
+
 // Swagger for health API
 /**
  * @swagger
@@ -178,7 +178,7 @@ app.get('/api/health', health);
  *       500:
  *         description: Something went wrong, please try again later.
  */
-
+app.use('/api',authRoutes)
 
 app.use((req: Request, res: Response) => {
   return res
