@@ -1,10 +1,11 @@
+import { StatusCodes } from "http-status-codes";
+import { responseGenerators } from "../../lib";
+import User from "../../model/user.model";
+import { generatePublicId, hashPassword, setTimesTamp } from "../../common/common-function";
+import { Request, Response } from "express";
+import { ERROR, USER } from "../../common/global-constants";
 
-import { generatePublicId, hashPassword, setTimesTamp } from 'common/common-function';
-import { ERROR, USER } from 'common/global-constants';
-import { Request, Response } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import { responseGenerators } from 'lib';
-import User from 'model/user.model';
+
 
 export const createSellerHandler = async (req: Request, res: Response) => {
   try {

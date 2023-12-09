@@ -3,7 +3,7 @@ import * as bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import express, { Request, Response } from 'express'; // NextFunction,
 import http from 'http';
-import helmet from 'helmet';
+// import helmet from 'helmet';
 import { StatusCodes } from 'http-status-codes';
 // import { Server } from 'socket.io';
 import logger from './lib/logger';
@@ -18,7 +18,7 @@ const app = express();
 const server = new http.Server(app);
 // app.use(cors());
 // const io = new Server(server,{cors: {origin: "*"}});
-app.use(helmet());
+// app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use((req, res, next) => {
@@ -52,7 +52,7 @@ app.use((req, res, next) => {
 
 const health = (req: Request, res: Response) => {
   res.json({
-    message: 'Roulete server is working',
+    message: 'ecomsoft server is working',
     env: process.env.NODE_ENV,
     headers: req.headers,
   });

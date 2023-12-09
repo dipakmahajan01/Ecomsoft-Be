@@ -1,14 +1,13 @@
 
-// import { comparePassword, setTimesTamp } from '@/common/common-function';
 
-import { StatusCodes } from 'http-status-codes';
-import { Request, Response } from 'express';
-import User from 'model/user.model';
-import { responseGenerators } from 'lib';
-import { ERROR, USER } from 'common/global-constants';
-import { createJwtToken } from 'helpers/jwt.helper';
-import Session from 'model/session.model';
-
+import { Request, Response } from "express";
+import { createJwtToken } from "../../helpers/jwt.helper";
+import { responseGenerators } from "../../lib";
+import User from "../../model/user.model";
+import Session from "../../model/session.model";
+import { StatusCodes } from "http-status-codes";
+import { ERROR, USER } from "../../common/global-constants";
+import { comparePassword } from "../../common/common-function";
 
 export const loginHandler = async(req:Request, res:Response) => {
   try {
@@ -18,10 +17,10 @@ export const loginHandler = async(req:Request, res:Response) => {
       return  res.status(StatusCodes.NOT_FOUND).send(responseGenerators({},StatusCodes.NOT_FOUND,USER.NOT_FOUND, true))
     }
     // login password match
-    // const isMatch = await comparePassword(password, user.password);
-    // if (!isMatch) {
-    //   return res.status(StatusCodes.BAD_REQUEST).send(responseGenerators({},StatusCodes.BAD_REQUEST,USER.PASSWORD, false))
-    // }
+    const isMatch = await comparePassword(password, user.password);
+    if (!isMatch) {
+      return res.status(StatusCodes.BAD_REQUEST).send(responseGenerators({},StatusCodes.BAD_REQUEST,USER.PASSWORD, false))
+    }
  
     // created jwt token
     const jwtToken = createJwtToken({
