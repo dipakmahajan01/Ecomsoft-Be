@@ -9,7 +9,8 @@ import { StatusCodes } from 'http-status-codes';
 import logger from './lib/logger';
 import { responseValidation } from './lib';
 import authRoutes from './routes/auth';
-
+import marketPlaceRoutes from './routes/marketplace';
+import rateCardRoutes from './routes/rate_card';
 
 dotenv.config();
 
@@ -23,7 +24,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use((req, res, next) => {
   try {
-
     // set header for swagger.
     res.setHeader(
       'Content-Security-Policy',
@@ -178,7 +178,9 @@ app.get('/api/health', health);
  *       500:
  *         description: Something went wrong, please try again later.
  */
-app.use('/api',authRoutes)
+app.use('/api/auth/', authRoutes);
+app.use('/api/marketplace', marketPlaceRoutes);
+app.use('/api/rate-card', rateCardRoutes);
 
 app.use((req: Request, res: Response) => {
   return res
