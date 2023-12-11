@@ -51,8 +51,8 @@ export const loginHandler = async (req: Request, res: Response) => {
       token: jwtToken,
     };
     return res
-      .status(StatusCodes.BAD_REQUEST)
-      .send(responseGenerators(userData, StatusCodes.BAD_REQUEST, USER.SUCCESS, false));
+      .status(StatusCodes.OK)
+      .send(responseGenerators(userData, StatusCodes.OK, USER.SUCCESS, false));
   } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)

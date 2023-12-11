@@ -26,8 +26,9 @@ export const createSellerHandler = async (req: Request, res: Response) => {
       created_at: setTimesTamp(),
       created_by: userId,
     });
-    return;
-  } catch (error) {
+    return res.status(StatusCodes.OK).json(responseGenerators({}, StatusCodes.OK, USER.CREATED, false));
+  } catch (error: any) {
+    console.log(error);
     if (error instanceof ValidationError) {
       return res
         .status(StatusCodes.BAD_REQUEST)
@@ -36,6 +37,8 @@ export const createSellerHandler = async (req: Request, res: Response) => {
 
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, false));
+      .send(
+        responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, error.message || ERROR.INTERNAL_SERVER_ERROR, true),
+      );
   }
 };

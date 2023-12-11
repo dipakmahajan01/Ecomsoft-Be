@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import express, { Request, Response } from 'express'; // NextFunction,
 import http from 'http';
 // import helmet from 'helmet';
+import cors from 'cors';
 import { StatusCodes } from 'http-status-codes';
 // import { Server } from 'socket.io';
 import logger from './lib/logger';
@@ -18,7 +19,7 @@ dotenv.config();
 const app = express();
 
 const server = new http.Server(app);
-// app.use(cors());
+app.use(cors());
 // const io = new Server(server,{cors: {origin: "*"}});
 // app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
