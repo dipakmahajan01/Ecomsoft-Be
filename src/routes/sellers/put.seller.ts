@@ -7,6 +7,7 @@ import { responseGenerators } from '../../lib';
 
 export const changePasswordHandler = async (req: Request, res: Response) => {
   try {
+    
     const { old_password: oldPassword, new_password: newPassword } = req.body;
     const tokenData:any = req.headers.tokenData;
     const userData = await User.findOne({ user_id: tokenData.user_id, is_deleted: false });
