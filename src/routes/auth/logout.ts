@@ -6,10 +6,10 @@ import { USER } from '../../common/global-constants';
 
 export const logoutHandler = async (req: Request, res: Response) => {
   try {
-    const { tokenData } = req.headers;
+    const tokenUserData: any = req.headers.tokenData;
 
     const sessionData = await Session.findOneAndUpdate({
-      user_id: tokenData.user_id,
+      user_id: tokenUserData.user_id,
       is_deleted: false,
     });
     if (!sessionData) {
