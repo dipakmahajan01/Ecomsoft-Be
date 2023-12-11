@@ -1,0 +1,86 @@
+{
+  "parserOptions": {
+    "project": "tsconfig.json",
+    "sourceType": "module",
+    "ecmaVersion": "es2017"
+  },
+  "plugins": [
+    "@typescript-eslint/eslint-plugin"
+  ],
+  "extends": [
+    "airbnb",
+    "airbnb-typescript",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "root": true,
+  "env": {
+    "node": true,
+    "jest": true
+  },
+  "ignorePatterns": [
+    ".eslintrc.json"
+  ],
+  "rules": {
+    "prettier/prettier": 0,
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/interface-name-prefix": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-redeclare": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-shadow": "off",
+    "react/prop-types": "off",
+    "camelcase": [
+      "error",
+      {
+        "properties": "never",
+        "ignoreDestructuring": true,
+        "ignoreImports": true,
+        "ignoreGlobals": true
+      }
+    ],
+    "import/prefer-default-export": "off",
+    "no-return-await": "off",
+    "no-underscore-dangle": "off",
+    "no-useless-constructor": "off",
+    "class-methods-use-this": "off",
+    "prefer-const": "off",
+    "no-shadow": "off",
+    "no-await-in-loop": "off",
+    "no-restricted-syntax": "off",
+    "func-names": [
+      "error",
+      "never"
+    ],
+    "quotes": "off",
+    "no-new": 0,
+    "react/jsx-props-no-spreading": 0,
+    "react/require-default-props": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never",
+        "mjs": "never"
+      }
+    ]
+  },
+  "settings": {
+    "import/extensions": [
+      ".js",
+      ".jsx",
+      ".ts",
+      ".tsx"
+    ],
+    "import/parsers": {
+      "@typescript-eslint/parser": [
+        ".ts",
+        ".tsx"
+      ]
+    }
+  }
+}
