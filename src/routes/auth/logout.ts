@@ -8,10 +8,13 @@ export const logoutHandler = async (req: Request, res: Response) => {
   try {
     const tokenUserData: any = req.headers.tokenData;
 
-    const sessionData = await Session.findOneAndUpdate({
-      user_id: tokenUserData.user_id,
-      is_deleted: false,
-    });
+    const sessionData = await Session.findOneAndUpdate(
+      {
+        user_id: tokenUserData.user_id,
+        is_deleted: false,
+      },
+      { $set: { is_expired: true } },
+    );
     if (!sessionData) {
       return res
         .status(StatusCodes.BAD_REQUEST)
