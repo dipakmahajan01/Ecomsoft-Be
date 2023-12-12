@@ -15,7 +15,7 @@ export interface ISessionModel {
   deleted_at: string;
 }
 const SessionSchema = new Schema({
-  session_id: { type: String, unique: true },
+  // session_id: { type: String, unique: true },
   is_expired: { type: Boolean, default: false },
   access_token: { type: String },
   user_id: { type: String },

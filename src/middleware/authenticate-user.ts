@@ -1,14 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { responseGenerators } from '../lib';
+import * as dotenv from 'dotenv';
+import { extractJwtToken, responseGenerators } from '../lib';
 import Session from '../model/session.model';
 import { verifyJwt } from '../helpers/jwt.helper';
-import * as dotenv from 'dotenv';
 import { ERROR } from '../common/global-constants';
+
 dotenv.config();
 export const authentication = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { authorization } = req.headers;
+    const authorization = extractJwtToken(req.headers.authorization);
     if (!authorization) {
       return res.status(StatusCodes.BAD_REQUEST).send(responseGenerators({}, StatusCodes.BAD_REQUEST));
     }
@@ -16,7 +17,7 @@ export const authentication = async (req: Request, res: Response, next: NextFunc
     if (!sessionData) {
       return res.status(StatusCodes.UNAUTHORIZED).send(responseGenerators({}, StatusCodes.UNAUTHORIZED));
     }
-    //verify token with jwt method
+    // verify token with jwt method
     const tokenData = await verifyJwt(authorization);
     if (!tokenData) {
       return res.status(StatusCodes.UNAUTHORIZED).send(responseGenerators({}, StatusCodes.UNAUTHORIZED));
@@ -24,6 +25,8 @@ export const authentication = async (req: Request, res: Response, next: NextFunc
     req.headers.tokenData = tokenData as any;
     next();
   } catch (error) {
-    return res.status(StatusCodes.UNAUTHORIZED).send(responseGenerators({}, StatusCodes.UNAUTHORIZED , ERROR.ERROR_MESSAGE));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.ERROR_MESSAGE));
   }
 };

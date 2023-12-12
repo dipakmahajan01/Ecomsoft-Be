@@ -1,13 +1,13 @@
 import { StatusCodes } from 'http-status-codes';
+import { Request, Response } from 'express';
 import { responseGenerators } from '../../lib';
 import { generatePublicId, getUserData, setTimesTamp } from '../../common/common-function';
-import { Request, Response } from 'express';
 import { CREDENTIALS, ERROR, USER } from '../../common/global-constants';
 import UserCredential from '../../model/user_credential.model';
 
 export const addMarketPlaceCred = async (req: Request, res: Response) => {
   try {
-    const { userId } = getUserData(req);
+    const { user_id: userId } = getUserData(req);
     const { api_key: apiKey, secret, market_place_name: marketPlaceName, account_name: accountName } = req.body;
     // already exists UserCredential
     const foundCredentials = await UserCredential.findOne({ api_key: apiKey, is_deleted: false });

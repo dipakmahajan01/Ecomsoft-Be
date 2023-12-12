@@ -1,10 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
+import { Request, Response } from 'express';
+import { ValidationError } from 'joi';
 import { responseGenerators } from '../../lib';
 import User from '../../model/user.model';
 import { generatePublicId, hashPassword, setTimesTamp } from '../../common/common-function';
-import { Request, Response } from 'express';
 import { ERROR, USER } from '../../common/global-constants';
-import { ValidationError } from 'joi';
 import { userValidationSchema } from '../../helpers/validations';
 
 export const createSellerHandler = async (req: Request, res: Response) => {
@@ -28,7 +28,6 @@ export const createSellerHandler = async (req: Request, res: Response) => {
     });
     return res.status(StatusCodes.OK).json(responseGenerators({}, StatusCodes.OK, USER.CREATED, false));
   } catch (error: any) {
-    console.log(error);
     if (error instanceof ValidationError) {
       return res
         .status(StatusCodes.BAD_REQUEST)
