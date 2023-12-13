@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "prebuild": "rimraf dist",
-    "start": "node --inspect build/server.js",
+    "start": "node build/server.js",
     "dev": "nodemon  server.ts",
     "ts": "tsnd --respawn server.ts",
     "build": "tsc",
