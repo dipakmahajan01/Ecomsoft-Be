@@ -2,11 +2,11 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import Session from '../../model/session.model';
 import { responseGenerators } from '../../lib';
-import { USER } from '../../common/global-constants';
+import { ITokenData, USER } from '../../common/global-constants';
 
 export const logoutHandler = async (req: Request, res: Response) => {
   try {
-    const tokenUserData: any = req.headers.tokenData;
+    const tokenUserData: any = (req.headers as any).tokenData as ITokenData;
 
     const sessionData = await Session.findOneAndUpdate(
       {

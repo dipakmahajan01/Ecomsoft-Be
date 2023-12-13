@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { Request, Response } from 'express';
 import { responseGenerators } from '../../lib';
 import { generatePublicId, getUserData, setTimesTamp } from '../../common/common-function';
-import { CREDENTIALS, ERROR, USER } from '../../common/global-constants';
+import { CREDENTIALS, ERROR } from '../../common/global-constants';
 import UserCredential from '../../model/user_credential.model';
 
 export const addMarketPlaceCred = async (req: Request, res: Response) => {

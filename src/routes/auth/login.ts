@@ -6,11 +6,11 @@ import User from '../../model/user.model';
 import Session from '../../model/session.model';
 import { ERROR, USER } from '../../common/global-constants';
 import { comparePassword } from '../../common/common-function';
-import { loginSchema } from '../../helpers/validation/user.validation';
+import { userValidationSchema } from '../../helpers/validation/user.validation';
 
 export const loginHandler = async (req: Request, res: Response) => {
   try {
-    await loginSchema.validateAsync(req.body);
+    await userValidationSchema.validateAsync(req.body);
     const { email, password } = req.body;
     const user = await User.findOne({ email, is_deleted: false });
     if (!user) {

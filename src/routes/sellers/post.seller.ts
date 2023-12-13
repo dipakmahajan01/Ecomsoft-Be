@@ -5,11 +5,12 @@ import { responseGenerators } from '../../lib';
 import User from '../../model/user.model';
 import { generatePublicId, hashPassword, setTimesTamp } from '../../common/common-function';
 import { ERROR, USER } from '../../common/global-constants';
-import { userValidationSchema } from '../../helpers/validations';
+import { userValidationSchema } from '../../helpers/validation/user.validation';
 
 export const createSellerHandler = async (req: Request, res: Response) => {
   try {
-    const { username, email, password } = await userValidationSchema.validateAsync(req.body);
+    await userValidationSchema.validateAsync(req.body);
+    const { username, email, password } = req.body;
     // already exists user
     const userData = await User.findOne({ email, is_deleted: false });
     if (userData) {
@@ -33,7 +34,6 @@ export const createSellerHandler = async (req: Request, res: Response) => {
         .status(StatusCodes.BAD_REQUEST)
         .json(responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, true));
     }
-
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(
