@@ -1,13 +1,13 @@
 import { StatusCodes } from 'http-status-codes';
+import { Request, Response } from 'express';
 import { responseGenerators } from '../../lib';
 import { getUserData } from '../../common/common-function';
-import { Request, Response } from 'express';
-import { CREDENTIALS, ERROR, USER } from '../../common/global-constants';
+import { CREDENTIALS, ERROR } from '../../common/global-constants';
 import UserCredential from '../../model/user_credential.model';
 
 export const getMarketplaceCred = async (req: Request, res: Response) => {
   try {
-    const { userId } = getUserData(req);
+    const { user_id: userId } = getUserData(req);
     const credentialDetails = await UserCredential.findOne({ user_id: userId, is_deleted: false });
     if (credentialDetails) {
       return res
