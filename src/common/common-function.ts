@@ -19,4 +19,4 @@ export const comparePassword = async (password: any, hash: any) => {
   return bcrypt.compareSync(password, hash);
 };
 
-export const getUserData = (req: Request) => req.headers.tokenData as any;
+export const getUserData = (req: Request) => (req.headers as any).tokenData as ITokenData;
