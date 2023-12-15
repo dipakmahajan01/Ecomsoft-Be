@@ -21,6 +21,6 @@ const configs: any = {
 const config = configs[process.env.NODE_ENV || 'development'].connection;
 /** Connect to Mongo */
 export const mongooseConnection = async () => {
-  mongoose.set('strictQuery', false)
-  return await mongoose.connect(config);
+  mongoose.set('strictQuery', false);
+  return mongoose.connect(config);
 };
