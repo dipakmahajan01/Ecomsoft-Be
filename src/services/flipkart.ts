@@ -4,16 +4,11 @@ import axios, { AxiosRequestConfig } from 'axios';
 import UserCredential from '../model/user_credential.model';
 import { FLIPKART } from '../common/global-constants';
 
-export const generateToken = async (sellerAuth) => {
+export const generateToken = async () => {
   try {
     const flipkartAccount = await UserCredential.findOne({ is_deleted: false });
     // console.log('flipkartAccount :>> ', flipkartAccount);
-    let base64Credentials;
-    if (sellerAuth) {
-      base64Credentials = btoa(`${sellerAuth.api_key}:${sellerAuth.secret}`);
-    } else {
-      base64Credentials = btoa(`${flipkartAccount.api_key}:${flipkartAccount.secret}`);
-    }
+    let base64Credentials = btoa(`${flipkartAccount.api_key}:${flipkartAccount.secret}`);
 
     // console.log('base64Credentials :>> ', base64Credentials);
     const config = {
@@ -86,7 +81,7 @@ export const generateToken = async (sellerAuth) => {
 export async function fetchShipments(config: any) {
   try {
     const newArr: any = [];
-    const { access_token: accessToken }: any = await generateToken(null);
+    const { access_token: accessToken }: any = await generateToken();
     const header = {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json', // Adjust the content type if necessary
@@ -118,40 +113,3 @@ export async function fetchShipments(config: any) {
     throw new Error('axios shipment error');
   }
 }
-
-export const getCancelOrders = async (sellerAuth, axiosConfig: AxiosRequestConfig, orderList: any) => {
-  try {
-    if (!axiosConfig.headers?.Authorization) {
-      const { access_token: accessToken } = (await generateToken(sellerAuth)) as any;
-      axiosConfig.headers.Authorization = `Bearer ${accessToken}`;
-      console.log('got token ........', axiosConfig.headers.Authorization, axiosConfig, accessToken, sellerAuth);
-    }
-    const { data } = await axios(axiosConfig);
-    const { hasMore, nextPageUrl, shipments } = data;
-    console.log('shipmentdata.....', shipments.length);
-    orderList.push(shipments);
-    if (hasMore) {
-      const newAxiosConfig = {
-        ...axiosConfig,
-        method: 'GET',
-        url: `${FLIPKART.FLIPKART_BASE_URL}/sellers${nextPageUrl}`,
-        data: null,
-      };
-      await getCancelOrders(sellerAuth, newAxiosConfig, orderList);
-      return orderList;
-    }
-    return orderList;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const errorCode = error.response.data?.error;
-      if (errorCode === 'unauthorized' || errorCode === 'invalid_token') {
-        delete axiosConfig.headers.Authorization;
-        await getCancelOrders(sellerAuth, axiosConfig, orderList);
-        return orderList;
-      }
-      throw error;
-    }
-    console.log('Need to handle the error here........', error);
-    throw error;
-  }
-};

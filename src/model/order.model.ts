@@ -1,9 +1,11 @@
+import { string } from 'joi';
 import mongoose, { Schema } from 'mongoose';
 
-export interface IOrderModel {
+export interface IOrder {
   order_id: string;
   order_item_id: string;
   Hsn_code: string;
+  fsn_code: string;
   status: string;
   order_date: string;
   sku: string;
@@ -11,6 +13,8 @@ export interface IOrderModel {
   quantity: number;
   paymentType: string;
   cancellationDate: { type: string };
+}
+export interface IOrderModel extends IOrder {
   created_by: string;
   updated_by: string;
   deleted_by: string;
@@ -23,6 +27,7 @@ const OrderSchema = new Schema({
   order_id: { type: String },
   order_item_id: { type: String },
   Hsn_code: { type: Number },
+  fsn_code: string,
   status: { type: String },
   order_date: { type: String },
   sku: { type: String },
