@@ -96,7 +96,7 @@ export const getCancelOrders = async ({
       url: `${FLIPKART.FLIPKART_BASE_URL}/sellers${nextPageUrl}`,
       data: null,
     };
-    const newOrderList = await getCancelOrders({ apiKey, secret, axiosConfig: newAxiosConfig, orderList });
+    const newOrderList = await getCancelOrders({ apiKey, secret, axiosConfig: newAxiosConfig });
     return [...orderList, ...newOrderList];
   } catch (error) {
     console.log('Need to handle the error here........', error);
@@ -106,7 +106,7 @@ export const getCancelOrders = async ({
     const errorCode = error.response.data?.error;
     if (errorCode === 'unauthorized' || errorCode === 'invalid_token') {
       delete axiosConfig.headers.Authorization;
-      const newOrderList = await getCancelOrders({ apiKey, secret, axiosConfig, orderList });
+      const newOrderList = await getCancelOrders({ apiKey, secret, axiosConfig });
       return [...orderList, ...newOrderList];
     }
     throw error;
