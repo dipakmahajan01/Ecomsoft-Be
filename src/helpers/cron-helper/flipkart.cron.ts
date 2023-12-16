@@ -2,9 +2,7 @@
 
 import cron from 'node-cron';
 import { fetchShipments } from '../../services/flipkart';
-import { FLIPKART } from '../../common/global-constants';
-import UserCredential from '../../model/user_credential.model';
-import { getCancelOrders, handleInsertCancelOrder } from '../../services/cancel.order';
+import { handleInsertCancelOrder } from '../../services/cancel.order';
 
 export const orderApiCron = () => {
   cron.schedule('*/2 * * * *', async () => {

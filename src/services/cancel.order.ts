@@ -70,12 +70,10 @@ export const getCancelOrders = async ({
   apiKey,
   secret,
   axiosConfig,
-}: // orderList,
-{
+}: {
   apiKey: string;
   secret: string;
   axiosConfig: AxiosRequestConfig;
-  orderList?: any[];
 }) => {
   let orderList = [];
   try {
