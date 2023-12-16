@@ -143,7 +143,10 @@ const updateAuthorAndTimeStamp = (author: string, doc: any) => {
 
 export const handleInsertCancelOrder = async () => {
   try {
-    const flipkartAccount = await UserCredential.find({ is_deleted: false });
+    const flipkartAccount = await UserCredential.find({
+      user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f',
+      s_deleted: false,
+    });
     // const today = formatDateToYYYYMMDD(getToday());
     // const tomorrow = formatDateToYYYYMMDD(getTomorrow());
 
