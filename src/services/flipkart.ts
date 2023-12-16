@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-console */
 import axios from 'axios';
 import UserCredential from '../model/user_credential.model';
@@ -9,7 +10,8 @@ export const generateToken = async () => {
       user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f',
     });
     // console.log('flipkartAccount :>> ', flipkartAccount);
-    const base64Credentials = btoa(`${flipkartAccount.api_key}:${flipkartAccount.secret}`);
+    let base64Credentials = btoa(`${flipkartAccount.api_key}:${flipkartAccount.secret}`);
+
     // console.log('base64Credentials :>> ', base64Credentials);
     const config = {
       method: 'get', // Change the HTTP method as needed (e.g., 'post', 'put', 'delete', etc.)

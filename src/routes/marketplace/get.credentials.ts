@@ -8,15 +8,10 @@ import UserCredential from '../../model/user_credential.model';
 export const getMarketplaceCred = async (req: Request, res: Response) => {
   try {
     const { user_id: userId } = getUserData(req);
-    const credentialDetails = await UserCredential.findOne({ user_id: userId, is_deleted: false });
-    if (credentialDetails) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(responseGenerators({}, StatusCodes.BAD_REQUEST, CREDENTIALS.NOT_FOUND));
-    }
+    const credentialDetails = await UserCredential.find({ user_id: userId, is_deleted: false });
     return res
       .status(StatusCodes.OK)
-      .send(responseGenerators(credentialDetails, StatusCodes.OK, CREDENTIALS.SUCCESS, false));
+      .send(responseGenerators(credentialDetails ?? [], StatusCodes.OK, CREDENTIALS.SUCCESS, false));
   } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)

@@ -13,7 +13,7 @@ import authRoutes from './routes/auth';
 import sellerRoute from './routes/sellers';
 import marketPlaceRoutes from './routes/marketplace';
 import rateCardRoutes from './routes/rate_card';
-import { orderApiCron } from './helpers/cron-helper/flipkart.cron';
+import { cancelOrderApiCron, orderApiCron } from './helpers/cron-helper/flipkart.cron';
 
 dotenv.config();
 
@@ -209,9 +209,10 @@ process.on('unhandledRejection', function (reason, promise) {
 });
 
 // cron set up
-if (process.env.IS_JOB) {
-  orderApiCron();
-}
+// if (process.env.IS_JOB) {
+orderApiCron();
+cancelOrderApiCron();
+// }
 
 // set socket connection
 // socketConnection(io);

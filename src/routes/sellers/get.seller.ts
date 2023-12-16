@@ -9,7 +9,7 @@ export const getSingleSellerHandler = async (req: Request, res: Response) => {
   try {
     const { user_id: userId } = getUserData(req);
     const userData = await User.findOne({ user_id: userId, is_deleted: false });
-    if (userData) {
+    if (!userData) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .send(responseGenerators({}, StatusCodes.NOT_FOUND, USER.NOT_FOUND, true));

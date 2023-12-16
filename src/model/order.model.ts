@@ -1,10 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
 
-export interface IOrderModel {
-  order_id: string;
+export interface IOrder {
   order_item_id: string;
   flipkart_order_id: string;
   Hsn_code: string;
+  fsn_code: string;
   status: string;
   order_date: string;
   sku: string;
@@ -12,6 +12,7 @@ export interface IOrderModel {
   quantity: number;
   paymentType: string;
   cancellationDate: { type: string };
+  order_id: string;
   created_by: string;
   updated_by: string;
   deleted_by: string;
@@ -25,6 +26,7 @@ const OrderSchema = new Schema({
   order_item_id: { type: String },
   flipkart_order_id: { type: String },
   Hsn_code: { type: Number },
+  fsn_code: { type: String },
   status: { type: String },
   order_date: { type: String },
   sku: { type: String },
@@ -41,6 +43,6 @@ const OrderSchema = new Schema({
   deleted_at: { type: String },
 });
 
-const order = mongoose.model<IOrderModel>('order', OrderSchema);
+const order = mongoose.model<IOrder>('order', OrderSchema);
 
 export default order;

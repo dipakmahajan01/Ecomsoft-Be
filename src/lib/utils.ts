@@ -99,3 +99,8 @@ export const logsError = (error: any) => {
   const errorStack = typeof error === 'object' ? error.stack : null;
   logger.error(`${errorMessage}, time: ${new Date().toISOString()}`, errorStack);
 };
+
+export function extractJwtToken(authorizationHeader: string) {
+  const match = authorizationHeader?.match(/^Bearer (.+)$/i);
+  return match ? match[1] : null;
+}

@@ -35,14 +35,13 @@ export const loginHandler = async (req: Request, res: Response) => {
     await Session.findOneAndUpdate(
       { user_id: user.user_id },
       {
-        $set: {
-          user_id: user.user_id,
-          access_token: jwtToken,
-          created_by: user.user_id,
-          is_expired: false,
-          // created_at: setTimesTamp(),
-        },
+        user_id: user.user_id,
+        access_token: jwtToken,
+        created_by: user.user_id,
+        is_expired: false,
+        // created_at: setTimesTamp(),
       },
+      { upsert: true, new: true },
     );
 
     const userData = {
@@ -51,9 +50,11 @@ export const loginHandler = async (req: Request, res: Response) => {
       token: jwtToken,
     };
     return res.status(StatusCodes.OK).send(responseGenerators(userData, StatusCodes.OK, USER.SUCCESS, false));
-  } catch (error) {
+  } catch (error: any) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, false));
+      .send(
+        responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, error.message || ERROR.INTERNAL_SERVER_ERROR, false),
+      );
   }
 };
