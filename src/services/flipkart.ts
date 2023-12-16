@@ -20,7 +20,6 @@ export const generateToken = async () => {
       },
     };
     const { data } = await axios(config);
-    console.log('data :>> ', data);
     if (!data && !data.data.access_token) {
       return [];
     }
@@ -79,6 +78,7 @@ export const generateToken = async () => {
 //   }
 // };
 let newArr: any = [];
+console.log('newArr :>> ', newArr);
 export async function fetchShipments(config: any) {
   try {
     const { access_token: accessToken }: any = await generateToken();
@@ -89,30 +89,17 @@ export async function fetchShipments(config: any) {
     // eslint-disable-next-line no-param-reassign
     config.headers = header;
     const { data } = await axios(config);
-    console.log('data :>> ', data);
     const nextUrl = data.nextPageUrl.replace(/'/g, '');
-    console.log('nextUrl :>> ', nextUrl);
-    // if (data.nextUrl) {
-    //   newArr.push(...data.shipments);
+    if (data.hasMore) {
+      newArr.push(...data.shipments);
 
-    //   const config = {
-    //     method: 'POST',
-    //     url: `https://api.flipkart.net/sellers${nextUrl}`,
-    //     data: {
-    //       filter: {
-    //         type: 'postDispatch',
-    //         states: ['DELIVERED'],
-    //         orderDate: {
-    //           from: '2023-09-14',
-    //           to: '2023-12-14',
-    //         },
-    //       },
-    //     },
-    //   };
-    //   await fetchShipments(config);
-    // }
-    // console.log('newArr :>> ', newArr);
-    return newArr;
+      const config = {
+        method: 'GET',
+        url: `https://api.flipkart.net/sellers${nextUrl}`,
+      };
+      await fetchShipments(config);
+    }
+    return { data: newArr };
   } catch (error) {
     throw new Error('axios shipment error');
   }

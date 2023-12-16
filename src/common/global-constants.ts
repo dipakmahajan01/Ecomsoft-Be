@@ -36,5 +36,5 @@ export const ERROR = {
 export const FLIPKART = {
   GENERATE_TOKEN_API:
     'https://api.flipkart.net/oauth-service/oauth/token?grant_type=client_credentials&scope=Seller_Api',
-  ORDER_API: 'https://api.flipkart.net/sellers/v3/shipments/filter/1',
+  ORDER_API: 'https://api.flipkart.net/sellers/v3/shipments/filter',
 };

@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 export interface IOrderModel {
   order_id: string;
   order_item_id: string;
+  flipkart_order_id: string;
   Hsn_code: string;
   status: string;
   order_date: string;
@@ -22,6 +23,7 @@ export interface IOrderModel {
 const OrderSchema = new Schema({
   order_id: { type: String },
   order_item_id: { type: String },
+  flipkart_order_id: { type: String },
   Hsn_code: { type: Number },
   status: { type: String },
   order_date: { type: String },
