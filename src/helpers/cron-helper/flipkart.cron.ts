@@ -1,13 +1,30 @@
 /* eslint-disable no-console */
 
 import cron from 'node-cron';
+import { fetchShipments } from '../../services/flipkart';
 import { FLIPKART } from '../../common/global-constants';
 import UserCredential from '../../model/user_credential.model';
 import { getCancelOrders, handleInsertCancelOrder } from '../../services/cancel.order';
 
 export const orderApiCron = () => {
-  cron.schedule('* * * * *', () => {
+  cron.schedule('*/2 * * * *', async () => {
     console.log('cron :>> ', 'cron running');
+    const config = {
+      method: 'POST',
+      url: `https://api.flipkart.net/sellers/v3/shipments/filter`,
+
+      data: {
+        filter: {
+          type: 'postDispatch',
+          states: ['DELIVERED'],
+          orderDate: {
+            from: '2023-9-15',
+            to: '2023-9-30',
+          },
+        },
+      },
+    };
+    await fetchShipments(config);
   });
 };
 
