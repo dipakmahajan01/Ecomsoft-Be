@@ -136,7 +136,7 @@ const getBodyData = ({ from, to }: { from: string; to: string }) => {
   };
 };
 
-const updateAuthorAndTimeStamp = (author, doc) => {
+const updateAuthorAndTimeStamp = (author: string, doc: any) => {
   doc.created_by = author;
   doc.updated_by = author;
   doc.created_at = setTimesTamp();
@@ -150,24 +150,28 @@ export const handleInsertCancelOrder = async () => {
     // const tomorrow = formatDateToYYYYMMDD(getTomorrow());
 
     for (let account of flipkartAccount) {
-      const axiosConfig = {
-        method: 'POST',
-        url: FLIPKART.ORDER_API,
-        data: getBodyData({ from: '2023-9-01', to: '2023-9-30' }),
-        headers: {},
-      };
-      console.log('Cancel order started');
-      const returnData = await getCancelOrders({
-        apiKey: account.api_key,
-        secret: account.secret,
-        axiosConfig,
-      });
+      try {
+        const axiosConfig = {
+          method: 'POST',
+          url: FLIPKART.ORDER_API,
+          data: getBodyData({ from: '2023-9-01', to: '2023-9-30' }),
+          headers: {},
+        };
+        console.log('Cancel order started');
+        const returnData = await getCancelOrders({
+          apiKey: account.api_key,
+          secret: account.secret,
+          axiosConfig,
+        });
 
-      console.log(returnData);
-      returnData.forEach((doc) => updateAuthorAndTimeStamp(account.user_id, doc));
-      console.log(returnData);
+        console.log(returnData);
+        returnData.forEach((doc) => updateAuthorAndTimeStamp(account.user_id, doc));
+        console.log(returnData);
+        console.log('cron :>> ', 'cron running');
+      } catch (error) {
+        console.log(`Error while processing account. API_KEY - ${account.api_key} SECRET - ${account.secret}`);
+      }
     }
-    console.log('cron :>> ', 'cron running');
   } catch (error) {
     console.log('error in cancel order cron job........', error);
   }
