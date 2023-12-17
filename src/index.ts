@@ -14,6 +14,7 @@ import sellerRoute from './routes/sellers';
 import marketPlaceRoutes from './routes/marketplace';
 import rateCardRoutes from './routes/rate_card';
 import { cancelOrderApiCron, orderApiCron } from './helpers/cron-helper/flipkart.cron';
+import { handleInsertCancelOrder } from './services/cancel.order';
 
 dotenv.config();
 
@@ -209,10 +210,13 @@ process.on('unhandledRejection', function (reason, promise) {
 });
 
 // cron set up
-// if (process.env.IS_JOB) {
-orderApiCron();
-cancelOrderApiCron();
-// }
+// Need to check the value bsc env is returning string.
+if (process.env.IS_JOB === 'true') {
+  // orderApiCron();
+  console.log('Cron called');
+  cancelOrderApiCron();
+  // handleInsertCancelOrder()
+}
 
 // set socket connection
 // socketConnection(io);

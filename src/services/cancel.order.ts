@@ -1,12 +1,14 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-console */
 import axios, { AxiosRequestConfig } from 'axios';
-import { FLIPKART } from '../common/global-constants';
-import { IOrder } from '../model/order.model';
+import { FLIPKART, FLIPKART_SERVICE_PROFILE, FLIPKART_STATUS, STATUS } from '../common/global-constants';
+import order, { IOrder } from '../model/order.model';
 import UserCredential from '../model/user_credential.model';
-import { setTimesTamp } from '../common/common-function';
+import { generatePublicId, setTimesTamp } from '../common/common-function';
+import RateCard from '../model/rateCard.model';
+import { calculateCommission, fetchAndCacheIfNeeded } from './common_helper';
 
-export const generateToken = async (apiKey: string, secret: string) => {
+const generateToken = async (apiKey: string, secret: string) => {
   try {
     let base64Credentials = btoa(`${apiKey}:${secret}`);
     const config = {
@@ -38,12 +40,19 @@ export const generateToken = async (apiKey: string, secret: string) => {
 };
 
 const extractOrderData = (order: any) => {
+  console.log('Order id', order.orderItemId);
+  console.log('quantity', order.quantity);
+  console.log('is_replacement', order.is_replacement);
   return {
     order_item_id: order.orderItemId,
     flipkart_order_id: order.orderId,
     Hsn_code: order.hsn,
     fsn_code: order.fsn,
-    status: order.status,
+    cancellationReason: order.cancellationReason,
+    cancellationSubReason: order.cancellationSubReason,
+    serviceProfile: order.serviceProfile,
+    courierReturn: order.courierReturn,
+    flipkart_status: order.status,
     order_date: order.orderDate,
     sku: order.sku,
     priceComponents: order.priceComponents,
@@ -54,16 +63,12 @@ const extractOrderData = (order: any) => {
 };
 
 const extractOrderItemsFromShipment = (shipment) => {
-  return shipment.map((shipment) => shipment.orderItems).flat(3);
-};
-
-const extractOrderFromOrderItem = (orderItems) => {
-  return orderItems.map(extractOrderData);
+  return shipment.map((shipment) => shipment.orderItems).flat();
 };
 
 const extractCancelOrderData = (shipments): IOrder[] => {
   const orderItemData = extractOrderItemsFromShipment(shipments);
-  return extractOrderFromOrderItem(orderItemData);
+  return orderItemData.map(extractOrderData);
 };
 
 export const getCancelOrders = async ({
@@ -84,8 +89,8 @@ export const getCancelOrders = async ({
 
     const { data } = await axios(axiosConfig);
     const { hasMore, nextPageUrl, shipments } = data;
-    const orders = extractCancelOrderData(shipments);
-    orderList = orders;
+    // const orders = extractCancelOrderData(shipments);
+    orderList = shipments;
     if (!hasMore) {
       return orderList;
     }
@@ -98,8 +103,8 @@ export const getCancelOrders = async ({
     };
     const newOrderList = await getCancelOrders({ apiKey, secret, axiosConfig: newAxiosConfig });
     return [...orderList, ...newOrderList];
-  } catch (error) {
-    console.log('Need to handle the error here........', error);
+  } catch (error: any) {
+    console.log('Need to handle the error here........', error?.response?.data ?? error.message);
     if (!axios.isAxiosError(error)) {
       throw error;
     }
@@ -116,15 +121,15 @@ export const getCancelOrders = async ({
 const getBodyData = ({ from, to }: { from: string; to: string }) => {
   return {
     filter: {
-      type: 'postDispatch',
-      states: ['DELIVERED'],
+      type: 'cancelled',
+      states: ['cancelled'],
       orderDate: {
         from,
         to,
       },
       cancellationDate: {
-        from: '2023-11-07',
-        to: '2023-11-23',
+        from,
+        to,
       },
       cancellationType: 'sellerCancellation',
     },
@@ -139,36 +144,60 @@ const updateAuthorAndTimeStamp = (author: string, doc: any) => {
   doc.updated_by = author;
   doc.created_at = setTimesTamp();
   doc.updated_at = setTimesTamp();
+  doc.order_id = generatePublicId();
 };
 
 export const handleInsertCancelOrder = async () => {
   try {
     const flipkartAccount = await UserCredential.find({
       user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f',
-      s_deleted: false,
+      is_deleted: false,
     });
     // const today = formatDateToYYYYMMDD(getToday());
     // const tomorrow = formatDateToYYYYMMDD(getTomorrow());
-
+    const cachedRateCardDocs = new Map();
     for (let account of flipkartAccount) {
       try {
         const axiosConfig = {
           method: 'POST',
           url: FLIPKART.ORDER_API,
-          data: getBodyData({ from: '2023-9-01', to: '2023-9-30' }),
+          data: getBodyData({ from: '2023-04-01', to: '2023-12-30' }),
           headers: {},
         };
         console.log('Cancel order started');
-        const returnData = await getCancelOrders({
+        const shipmentsData = await getCancelOrders({
           apiKey: account.api_key,
           secret: account.secret,
           axiosConfig,
         });
 
-        console.log(returnData);
-        returnData.forEach((doc) => updateAuthorAndTimeStamp(account.user_id, doc));
-        console.log(returnData);
-        console.log('cron :>> ', 'cron running');
+        console.log('shipments data', shipmentsData);
+        const orderData = extractCancelOrderData(shipmentsData);
+
+        for (let doc of orderData) {
+          if (doc.cancellationReason === FLIPKART_STATUS.SELLER_CANCELLATION) {
+            const rateCardData = await fetchAndCacheIfNeeded(cachedRateCardDocs, doc.fsn_code);
+
+            if (rateCardData) {
+              const serverProfile =
+                doc.serviceProfile === FLIPKART_SERVICE_PROFILE.SELLER_FULFILMENT
+                  ? FLIPKART_SERVICE_PROFILE.NON_FBF
+                  : FLIPKART_SERVICE_PROFILE.FBF;
+
+              const customerPrice = doc.priceComponents.sellingPrice;
+              const commissionTable = rateCardData.commission[serverProfile];
+              const commission = calculateCommission(customerPrice, commissionTable);
+              doc.commission = commission;
+              // Need to calculate base on pre ready to dispatch and post ready to dispatch.
+              doc.net_profit = -commission;
+              doc.status = STATUS.CANCELLED;
+            }
+          }
+          updateAuthorAndTimeStamp(account.user_id, doc);
+        }
+        debugger;
+        console.log(orderData.length);
+        const doc = await order.insertMany(orderData);
       } catch (error) {
         console.log(`Error while processing account. API_KEY - ${account.api_key} SECRET - ${account.secret}`);
       }

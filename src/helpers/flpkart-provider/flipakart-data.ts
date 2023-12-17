@@ -22,7 +22,7 @@ export const orderApiDataInsert = async () => {
       },
     };
     const { data } = await fetchShipments(config);
-    console.log('data', data);
+    console.log('data', data.length);
     let orderArr = [];
     let orderArrInsertData = [];
     for (const orderData of data) {
