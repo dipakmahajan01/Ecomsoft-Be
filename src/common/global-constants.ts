@@ -39,3 +39,23 @@ export const FLIPKART = {
   ORDER_API: 'https://api.flipkart.net/sellers/v3/shipments/filter/',
   FLIPKART_BASE_URL: 'https://api.flipkart.net',
 };
+
+export const FLIPKART_STATUS = {
+  SELLER_CANCELLATION: 'seller_cancellation',
+};
+
+export const FLIPKART_SERVICE_PROFILE = {
+  NON_FBF: 'NON_FBF',
+  FBF: 'FBF',
+  SELLER_FULFILMENT: 'Seller_Fulfilment', // This is same as NON_FBF
+  // FLIPKART_FULFILMENT: 'Seller_Fulfilment', //We don't know now what will be the value for this, This is same as FBF
+};
+
+export const STATUS = {
+  CANCELLED: 'CANCELLED',
+  ON_GOING: 'ON_GOING',
+  COMPLETED: 'COMPLETED',
+  COURIER_RETURN: 'COURIER_RETURN',
+  CUSTOMER_RETURN: 'CUSTOMER_RETURN',
+  // REPLACEMENT: "REPLACEMENT" // may be base on how we are going to handle it.
+};

@@ -5,13 +5,15 @@
   "main": "server.js",
   "scripts": {
     "prebuild": "rimraf dist",
-    "start": "node build/server.js",
+    "start": "node  build/server.js",
+    "runDebug": "node --inspect build/server.js",
     "dev": "nodemon  server.ts",
     "ts": "tsnd --respawn server.ts",
     "build": "tsc",
     "clean": "npx rimraf ./build",
     "dist": "sh ./scripts/build.sh",
     "server": "tsc-watch --outDir ./build --onSuccess \"npm run start -- --mode=http\" --onFailure \"echo ERROR! Compilation Failed\"",
+    "debug": "tsc-watch --outDir ./build --onSuccess \"npm run runDebug -- --mode=http \" --onFailure \"echo ERROR! Compilation Failed\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "format": "prettier --write \"{src,apps,libs,test}/**/*.ts\""

@@ -6,13 +6,25 @@ export interface IOrder {
   Hsn_code: string;
   fsn_code: string;
   status: string;
+  flipkart_status: string;
+  cancellationReason: string;
+  cancellationSubReason: string;
   order_date: string;
   sku: string;
-  priceComponents: string;
+  priceComponents: {
+    sellingPrice: number;
+    totalPrice: number;
+    shippingCharge: number;
+    customerPrice: number;
+    flipkartDiscount: number;
+  };
   quantity: number;
   paymentType: string;
   cancellationDate: { type: string };
+  serviceProfile: string;
   order_id: string;
+  commission: number;
+  net_profit: number;
   created_by: string;
   updated_by: string;
   deleted_by: string;
@@ -28,12 +40,18 @@ const OrderSchema = new Schema({
   Hsn_code: { type: Number },
   fsn_code: { type: String },
   status: { type: String },
+  flipkart_status: { type: String },
+  cancellationReason: { type: String },
+  cancellationSubReason: { type: String },
   order_date: { type: String },
   sku: { type: String },
   priceComponents: { type: Object },
   quantity: { type: Number },
   paymentType: { type: String },
   cancellationDate: { type: String },
+  serviceProfile: { type: String },
+  commission: { type: Number },
+  net_profit: { type: Number },
   created_by: { type: String },
   updated_by: { type: String },
   deleted_by: { type: String },

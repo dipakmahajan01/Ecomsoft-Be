@@ -12,5 +12,6 @@ export const orderApiCron = () => {
 };
 
 export const cancelOrderApiCron = () => {
+  console.log('Cron setup for cancel order');
   cron.schedule('* * * * *', handleInsertCancelOrder);
 };
