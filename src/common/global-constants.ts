@@ -37,7 +37,10 @@ export const FLIPKART = {
   GENERATE_TOKEN_API:
     'https://api.flipkart.net/oauth-service/oauth/token?grant_type=client_credentials&scope=Seller_Api',
   ORDER_API: 'https://api.flipkart.net/sellers/v3/shipments/filter/',
+  RETURN_ORDER_API: 'https://api.flipkart.net/sellers/v2/returns',
   FLIPKART_BASE_URL: 'https://api.flipkart.net',
+  GET_SHIPMENT_V2: 'https://api.flipkart.net/sellers/v2/orders/shipments',
+  GET_SHIPMENT_V3: 'https://api.flipkart.net/sellers/v3/shipments',
 };
 
 export const FLIPKART_STATUS = {

@@ -5,71 +5,7 @@ import { FLIPKART, FLIPKART_SERVICE_PROFILE, FLIPKART_STATUS, STATUS } from '../
 import order, { IOrder } from '../model/order.model';
 import UserCredential from '../model/user_credential.model';
 import { generatePublicId, setTimesTamp } from '../common/common-function';
-import RateCard from '../model/rateCard.model';
-import { calculateCommission, fetchAndCacheIfNeeded } from './common_helper';
-
-const generateToken = async (apiKey: string, secret: string) => {
-  try {
-    let base64Credentials = btoa(`${apiKey}:${secret}`);
-    const config = {
-      method: 'get', // Change the HTTP method as needed (e.g., 'post', 'put', 'delete', etc.)
-      url: FLIPKART.GENERATE_TOKEN_API,
-      headers: {
-        Authorization: `Basic ${base64Credentials}`,
-        'Content-Type': 'application/json', // Adjust the content type if necessary
-      },
-    };
-    const { data } = await axios(config);
-    if (!data && !data.data.access_token) {
-      throw new Error(`Token not found in response for apiKet:- ${apiKey} secret:- ${secret}`);
-    }
-    return data.access_token;
-  } catch (error: any) {
-    console.log(error);
-    if (!axios.isAxiosError(error)) {
-      throw new Error(`Something went wrong... Please check. Message:- ${error.message}  errorCode: ${error.name}`);
-    }
-
-    const { error: errorCode, error_description: errorDescription } = error.response?.data ?? {};
-    throw new Error(
-      `Something is off in API or seller Credentials... Please check. Message:- ${
-        errorDescription ?? error.message
-      }  errorCode: ${errorCode ?? error.name}`,
-    );
-  }
-};
-
-const extractOrderData = (order: any) => {
-  console.log('Order id', order.orderItemId);
-  console.log('quantity', order.quantity);
-  console.log('is_replacement', order.is_replacement);
-  return {
-    order_item_id: order.orderItemId,
-    flipkart_order_id: order.orderId,
-    Hsn_code: order.hsn,
-    fsn_code: order.fsn,
-    cancellationReason: order.cancellationReason,
-    cancellationSubReason: order.cancellationSubReason,
-    serviceProfile: order.serviceProfile,
-    courierReturn: order.courierReturn,
-    flipkart_status: order.status,
-    order_date: order.orderDate,
-    sku: order.sku,
-    priceComponents: order.priceComponents,
-    quantity: order.quantity,
-    paymentType: order.paymentType,
-    cancellationDate: order?.cancellationDate ?? null,
-  };
-};
-
-const extractOrderItemsFromShipment = (shipment) => {
-  return shipment.map((shipment) => shipment.orderItems).flat();
-};
-
-const extractCancelOrderData = (shipments): IOrder[] => {
-  const orderItemData = extractOrderItemsFromShipment(shipments);
-  return orderItemData.map(extractOrderData);
-};
+import { calculateCommission, extractOrders, fetchAndCacheIfNeeded, generateToken } from './common_helper';
 
 export const getCancelOrders = async ({
   apiKey,
@@ -172,7 +108,7 @@ export const handleInsertCancelOrder = async () => {
         });
 
         console.log('shipments data', shipmentsData);
-        const orderData = extractCancelOrderData(shipmentsData);
+        const orderData = extractOrders(shipmentsData);
 
         for (let doc of orderData) {
           if (doc.cancellationReason === FLIPKART_STATUS.SELLER_CANCELLATION) {
@@ -195,7 +131,6 @@ export const handleInsertCancelOrder = async () => {
           }
           updateAuthorAndTimeStamp(account.user_id, doc);
         }
-        debugger;
         console.log(orderData.length);
         const doc = await order.insertMany(orderData);
       } catch (error) {
