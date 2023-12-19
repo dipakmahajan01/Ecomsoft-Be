@@ -5,12 +5,14 @@ import { handleInsertCancelOrder } from '../../services/cancel.order';
 import { orderApiDataInsert } from '../flpkart-provider/flipakart-data';
 
 export const orderApiCron = () => {
-  cron.schedule('*/3 * * * *', async () => {
+  cron.schedule('* * * * *', async () => {
     console.log('cron :>> ', 'cron running');
     await orderApiDataInsert();
   });
 };
 
 export const cancelOrderApiCron = () => {
-  cron.schedule('* * * * *', handleInsertCancelOrder);
+  cron.schedule('* * * * *', async () => {
+    await handleInsertCancelOrder();
+  });
 };

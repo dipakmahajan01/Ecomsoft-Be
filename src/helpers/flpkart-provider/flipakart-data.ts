@@ -2,7 +2,7 @@
 
 import { generatePublicId, setTimesTamp } from '../../common/common-function';
 import { FLIPKART } from '../../common/global-constants';
-import { fetchShipments } from '../../services/flipkart';
+import { fetchShipments, orderStatusCheckApi } from '../../services/flipkart';
 import order from '../../model/order.model';
 // eslint-disable-next-line
 export const orderApiDataInsert = async () => {
@@ -22,7 +22,7 @@ export const orderApiDataInsert = async () => {
       },
     };
     const { data } = await fetchShipments(config);
-    console.log('data', data);
+    // console.log('data', data);
     let orderArr = [];
     let orderArrInsertData = [];
     for (const orderData of data) {
@@ -47,8 +47,8 @@ export const orderApiDataInsert = async () => {
         orderArrInsertData.push(setOrder);
       }
     }
-    const a = await order.insertMany(orderArrInsertData);
-    console.log('a', a);
+    await order.insertMany(orderArrInsertData);
+    await orderStatusCheckApi();
   } catch (error) {
     return error;
   }

@@ -11,7 +11,7 @@ export const getMarketplaceCred = async (req: Request, res: Response) => {
     const credentialDetails = await UserCredential.find({ user_id: userId, is_deleted: false });
     return res
       .status(StatusCodes.OK)
-      .send(responseGenerators(credentialDetails ?? [], StatusCodes.OK, CREDENTIALS.SUCCESS, false));
+      .send(responseGenerators(credentialDetails, StatusCodes.OK, CREDENTIALS.SUCCESS, false));
   } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)

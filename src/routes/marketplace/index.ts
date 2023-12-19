@@ -7,6 +7,6 @@ const marketPlaceRoutes = Router();
 
 marketPlaceRoutes.use(authentication);
 marketPlaceRoutes.post('/add', addMarketPlaceCred);
-marketPlaceRoutes.get('/get', getMarketplaceCred);
+marketPlaceRoutes.get('/', getMarketplaceCred);
 
 export default marketPlaceRoutes;
