@@ -22,7 +22,6 @@ export const orderApiDataInsert = async () => {
       },
     };
     const { data } = await fetchShipments(config);
-    console.log('data', data.length);
     let orderArr = [];
     let orderArrInsertData = [];
     for (const orderData of data) {
@@ -47,8 +46,7 @@ export const orderApiDataInsert = async () => {
         orderArrInsertData.push(setOrder);
       }
     }
-    const a = await order.insertMany(orderArrInsertData);
-    console.log('a', a);
+    return await order.insertMany(orderArrInsertData);
   } catch (error) {
     return error;
   }

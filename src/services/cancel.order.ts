@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 import axios, { AxiosRequestConfig } from 'axios';
 import { FLIPKART, FLIPKART_SERVICE_PROFILE, FLIPKART_STATUS, STATUS } from '../common/global-constants';
-import order, { IOrder } from '../model/order.model';
+import order from '../model/order.model';
 import UserCredential from '../model/user_credential.model';
 import { generatePublicId, setTimesTamp } from '../common/common-function';
 import { calculateCommission, extractOrders, fetchAndCacheIfNeeded, generateToken } from './common_helper';
@@ -100,14 +100,12 @@ export const handleInsertCancelOrder = async () => {
           data: getBodyData({ from: '2023-04-01', to: '2023-12-30' }),
           headers: {},
         };
-        console.log('Cancel order started');
         const shipmentsData = await getCancelOrders({
           apiKey: account.api_key,
           secret: account.secret,
           axiosConfig,
         });
 
-        console.log('shipments data', shipmentsData);
         const orderData = extractOrders(shipmentsData);
 
         for (let doc of orderData) {
@@ -131,13 +129,15 @@ export const handleInsertCancelOrder = async () => {
           }
           updateAuthorAndTimeStamp(account.user_id, doc);
         }
-        console.log(orderData.length);
-        const doc = await order.insertMany(orderData);
+        return await order.insertMany(orderData);
       } catch (error) {
         console.log(`Error while processing account. API_KEY - ${account.api_key} SECRET - ${account.secret}`);
       }
     }
+
+    return null;
   } catch (error) {
     console.log('error in cancel order cron job........', error);
+    return null;
   }
 };

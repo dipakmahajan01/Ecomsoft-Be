@@ -20,6 +20,7 @@ export const generateToken = async (apiKey: string, secret: string) => {
     }
     return data.access_token;
   } catch (error: any) {
+    // eslint-disable-next-line no-console
     console.log(error);
     if (!axios.isAxiosError(error)) {
       throw new Error(`Something went wrong... Please check. Message:- ${error.message}  errorCode: ${error.name}`);
@@ -136,9 +137,6 @@ export function returnShipmentType(
 }
 
 export const extractOrderData = (order: any) => {
-  console.log('Order id', order.orderItemId);
-  console.log('quantity', order.quantity);
-  console.log('is_replacement', order.is_replacement);
   return {
     order_item_id: order.orderItemId,
     flipkart_order_id: order.orderId,
