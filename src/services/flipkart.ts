@@ -9,10 +9,8 @@ export const generateToken = async () => {
     const flipkartAccount = await UserCredential.findOne({
       user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f',
     });
-    // console.log('flipkartAccount :>> ', flipkartAccount);
     let base64Credentials = btoa(`${flipkartAccount.api_key}:${flipkartAccount.secret}`);
 
-    // console.log('base64Credentials :>> ', base64Credentials);
     const config = {
       method: 'get', // Change the HTTP method as needed (e.g., 'post', 'put', 'delete', etc.)
       url: FLIPKART.GENERATE_TOKEN_API,
@@ -80,7 +78,6 @@ export const generateToken = async () => {
 //   }
 // };
 let newArr: any = [];
-console.log('newArr :>> ', newArr);
 export async function fetchShipments(config: any) {
   try {
     const { access_token: accessToken }: any = await generateToken();

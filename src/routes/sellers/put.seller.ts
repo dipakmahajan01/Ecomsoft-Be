@@ -11,11 +11,13 @@ export const changePasswordHandler = async (req: Request, res: Response) => {
     const { user_id: userId } = getUserData(req);
     const userData = await User.findOne({ user_id: userId, is_deleted: false });
     if (!userData) {
-      return res.status(StatusCodes.BAD_REQUEST).send(responseGenerators({}, StatusCodes.BAD_REQUEST));
+      return res.status(StatusCodes.BAD_REQUEST).send(responseGenerators({}, StatusCodes.BAD_REQUEST, USER.NOT_FOUND));
     }
     const isMatch = await comparePassword(oldPassword, userData.password);
     if (!isMatch) {
-      return res.status(StatusCodes.BAD_REQUEST).send(responseGenerators({}, StatusCodes.BAD_REQUEST));
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(responseGenerators({}, StatusCodes.BAD_REQUEST, USER.OLD_PASSWORD_NOT_MATCH));
     }
     const bcryptPassword = await hashPassword(newPassword);
     await User.updateOne({ user_id: userId, is_deleted: false }, { password: bcryptPassword });

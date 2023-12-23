@@ -10,7 +10,7 @@ import { userValidationSchema } from '../../helpers/validation/user.validation';
 
 export const loginHandler = async (req: Request, res: Response) => {
   try {
-    await userValidationSchema.validateAsync(req.body);
+    await userValidationSchema.login.validateAsync(req.body);
     const { email, password } = req.body;
     const user = await User.findOne({ email, is_deleted: false });
     if (!user) {

@@ -9,6 +9,7 @@ export const USER = {
   NOT_FOUND: 'user not found',
   FOUND: 'user successfully found',
   PASSWORD: 'password does not match please try again',
+  OLD_PASSWORD_NOT_MATCH: 'Old password does not match please try again',
   SUCCESS: 'user successfully',
   PASSWORD_UPDATE: 'password successfully updated',
   LOGOUT_FAIL: 'user logout failed',
@@ -37,7 +38,10 @@ export const FLIPKART = {
   GENERATE_TOKEN_API:
     'https://api.flipkart.net/oauth-service/oauth/token?grant_type=client_credentials&scope=Seller_Api',
   ORDER_API: 'https://api.flipkart.net/sellers/v3/shipments/filter/',
+  RETURN_ORDER_API: 'https://api.flipkart.net/sellers/v2/returns',
   FLIPKART_BASE_URL: 'https://api.flipkart.net',
+  GET_SHIPMENT_V2: 'https://api.flipkart.net/sellers/v2/orders/shipments',
+  GET_SHIPMENT_V3: 'https://api.flipkart.net/sellers/v3/shipments',
 };
 
 export const FLIPKART_STATUS = {
