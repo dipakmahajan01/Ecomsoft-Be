@@ -9,6 +9,7 @@ export const USER = {
   NOT_FOUND: 'user not found',
   FOUND: 'user successfully found',
   PASSWORD: 'password does not match please try again',
+  OLD_PASSWORD_NOT_MATCH: 'Old password does not match please try again',
   SUCCESS: 'user successfully',
   PASSWORD_UPDATE: 'password successfully updated',
   LOGOUT_FAIL: 'user logout failed',
