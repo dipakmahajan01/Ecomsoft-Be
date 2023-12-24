@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { FLIPKART } from '../common/global-constants';
-import RateCard from '../model/rateCard.model';
-import { EShipmentType, EShipmentZones } from './common.types';
+import { EShipmentType, EShipmentZones } from '../common.types';
+import { FLIPKART } from '../../common/global-constants';
+import RateCard from '../../model/rateCard.model';
+import { generatePublicId, setTimesTamp } from '../../common/common-function';
 
 export const generateToken = async (apiKey: string, secret: string) => {
   try {
@@ -37,7 +38,7 @@ export const generateToken = async (apiKey: string, secret: string) => {
 
 export const fetchAndCacheIfNeeded = async (cache: any, fsnCode: string) => {
   if (!cache.has(fsnCode)) {
-    const rateCard = await RateCard.findOne({ fsn_code: fsnCode });
+    const rateCard = await RateCard.findOne({ fsn_code: fsnCode, needs_to_add: false }).lean();
     if (!rateCard) {
       await RateCard.create({
         fsn_code: fsnCode,
@@ -49,20 +50,6 @@ export const fetchAndCacheIfNeeded = async (cache: any, fsnCode: string) => {
   }
 
   return cache.get(fsnCode);
-};
-
-const getApplicableRate = (price: number, table: any[]) => {
-  return table.find((row) => row.max_item_val >= price && row.min_item_val <= price);
-};
-
-const returnPercentageOf = (val, percentage) => {
-  return (val * percentage) / 100;
-};
-
-export const calculateCommission = (customerPrice: number, commissionTable: any) => {
-  const row = getApplicableRate(customerPrice, commissionTable);
-  const commission = returnPercentageOf(customerPrice, row.percentage);
-  return commission;
 };
 
 export function sliceIntoBatches(array, batchSize) {
@@ -136,7 +123,13 @@ export function returnShipmentType(
   return EShipmentType['N/A'];
 }
 
-export const extractOrderData = (order: any) => {
+export const extractOrderData = (order: any, packageInfo: any) => {
+  let totalWeight = 0;
+  const packagesDetails = order.packageIds.map((id: string) => {
+    const pkg = packageInfo[id];
+    totalWeight += pkg.weight;
+    return pkg;
+  });
   return {
     order_item_id: order.orderItemId,
     flipkart_order_id: order.orderId,
@@ -153,7 +146,31 @@ export const extractOrderData = (order: any) => {
     quantity: order.quantity,
     paymentType: order.paymentType,
     cancellationDate: order?.cancellationDate ?? null,
+    packagesDetails,
+    totalWeight,
   };
+};
+
+export const extractOrderWeightInfo = (shipmentData) => {
+  let packageInfo = {};
+
+  for (let shipment of shipmentData) {
+    shipment.subShipments.forEach((subShipment) => {
+      if (subShipment.packages) {
+        subShipment.packages.forEach((packageData) => {
+          let packageDetails = {
+            packageId: packageData.packageId,
+            packageSku: packageData.packageSku,
+            weight: packageData.dimensions.weight,
+          };
+
+          packageInfo[packageDetails.packageId] = packageDetails;
+        });
+      }
+    });
+  }
+
+  return packageInfo;
 };
 
 export const extractOrderItemsFromShipment = (shipment) => {
@@ -162,5 +179,22 @@ export const extractOrderItemsFromShipment = (shipment) => {
 
 export const extractOrders = (shipments) => {
   const orderItemData = extractOrderItemsFromShipment(shipments);
-  return orderItemData.map(extractOrderData);
+  const packageInfo = extractOrderWeightInfo(shipments);
+  return orderItemData.map((order) => extractOrderData(order, packageInfo));
+};
+
+export const modifyAuthorAndTimeStamp = (author: string, doc: any) => {
+  // Explicity adding the ignore rule for every line bsc i don't want to disable this rule for all file.
+  // WARNING - This function is directly modifying the object.
+
+  // eslint-disable-next-line no-param-reassign
+  doc.created_by = author;
+  // eslint-disable-next-line no-param-reassign
+  doc.updated_by = author;
+  // eslint-disable-next-line no-param-reassign
+  doc.created_at = setTimesTamp();
+  // eslint-disable-next-line no-param-reassign
+  doc.updated_at = setTimesTamp();
+  // eslint-disable-next-line no-param-reassign
+  doc.order_id = generatePublicId();
 };

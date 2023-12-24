@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import axios, { AxiosRequestConfig } from 'axios';
 import { FLIPKART } from '../common/global-constants';
-import { generateToken, sliceIntoBatches } from './common_helper';
+import { generateToken, sliceIntoBatches } from './helpers';
 
 const FLIPKART_MAX_ORDER_GET_LIMIT = 25;
 

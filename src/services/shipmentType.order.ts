@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import axios, { AxiosRequestConfig } from 'axios';
 import { FLIPKART } from '../common/global-constants';
-import { generateToken, returnShipmentType, sliceIntoBatches } from './common_helper';
+import { generateToken, returnShipmentType, sliceIntoBatches } from './helpers';
 
 const FLIPKART_MAX_SHIPMENT_GET_LIMIT = 100;
 
@@ -53,7 +53,7 @@ export const getShipmentsType = async ({
   token: string;
   apiKey: string;
   secret: string;
-}) => {
+}): Promise<{ [orderId: string]: any }> => {
   let result = {};
   try {
     let accessToken = token;

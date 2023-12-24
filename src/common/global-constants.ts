@@ -55,6 +55,11 @@ export const FLIPKART_SERVICE_PROFILE = {
   // FLIPKART_FULFILMENT: 'Seller_Fulfilment', //We don't know now what will be the value for this, This is same as FBF
 };
 
+export const FLIPKART_ORDER_STATUS = {
+  DELIVERED: 'DELIVERED',
+  RETURNED: 'RETURNED',
+};
+
 export const STATUS = {
   CANCELLED: 'CANCELLED',
   ON_GOING: 'ON_GOING',
@@ -62,4 +67,10 @@ export const STATUS = {
   COURIER_RETURN: 'COURIER_RETURN',
   CUSTOMER_RETURN: 'CUSTOMER_RETURN',
   // REPLACEMENT: "REPLACEMENT" // may be base on how we are going to handle it.
+};
+
+export const FLIPKART_PAYMENT_TYPES = {
+  PREPAID: 'PREPAID',
+  COD: 'COD',
+  POSTPAID: 'POSTPAID',
 };

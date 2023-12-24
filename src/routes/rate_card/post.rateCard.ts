@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { responseGenerators } from '../../lib';
+import { logsError, responseGenerators } from '../../lib';
 import { ERROR, RATE_CARD } from '../../common/global-constants';
 import {
   extractCollectionFees,
@@ -30,6 +30,7 @@ export const createRateCardData = async (req: Request, res: Response) => {
     const rateCardData = await RateCard.findOneAndUpdate({ fsn_code: fsnCode }, rateCardFinalData, { upsert: true });
     return res.status(StatusCodes.OK).send(responseGenerators(rateCardData, StatusCodes.OK, RATE_CARD.SUCCESS, false));
   } catch (error) {
+    logsError(error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, true));

@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 export interface IUserCredentialModel {
   platform_id: string;
   market_place_name: string;
+  badge: string;
   user_id: string;
   api_key: string;
   secret: string;
@@ -17,6 +18,7 @@ export interface IUserCredentialModel {
 const userCredentialSchema = new Schema({
   platform_id: { type: String, unique: true },
   market_place_name: { type: String },
+  badge: { type: String },
   user_id: { type: String },
   api_key: { type: String },
   secret: { type: String },
@@ -29,6 +31,6 @@ const userCredentialSchema = new Schema({
   updated_by: { type: String },
   deleted_by: { type: String },
 });
-const UserCredential =  mongoose.model<IUserCredentialModel>('UserCredential', userCredentialSchema);
+const UserCredential = mongoose.model<IUserCredentialModel>('UserCredential', userCredentialSchema);
 
 export default UserCredential;
