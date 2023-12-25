@@ -40,3 +40,13 @@ export function formatDateToYYYYMMDD(inputDate: Date): string {
   const formattedDate = `${year}-${month}-${day}`;
   return formattedDate;
 }
+
+export function getStartOfDay(date = new Date()) {
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+export function getEndOfDay(date = new Date()) {
+  date.setHours(23, 59, 59, 999);
+  return date;
+}

@@ -65,6 +65,7 @@ export interface IRateCardModel {
     NO_FBF: [TShippingFee];
     FBF: [TShippingFee];
   };
+  needs_to_add: boolean;
 }
 
 const CommissionSchema = new mongoose.Schema(
@@ -159,6 +160,7 @@ const RateCardSchema = new mongoose.Schema(
       NON_FBF: [ShippingFeeSchema],
       FBF: [ShippingFeeSchema],
     },
+    needs_to_add: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

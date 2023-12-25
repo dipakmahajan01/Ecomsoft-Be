@@ -9,7 +9,7 @@ import { userValidationSchema } from '../../helpers/validation/user.validation';
 
 export const createSellerHandler = async (req: Request, res: Response) => {
   try {
-    await userValidationSchema.validateAsync(req.body);
+    await userValidationSchema.signup.validateAsync(req.body);
     const { username, email, password } = req.body;
     // already exists user
     const userData = await User.findOne({ email, is_deleted: false });

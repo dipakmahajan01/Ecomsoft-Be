@@ -1,5 +1,5 @@
-import { StatusCodes } from 'http-status-codes';
 import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { responseGenerators } from '../../lib';
 import { ERROR, RATE_CARD } from '../../common/global-constants';
 import {

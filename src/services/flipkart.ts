@@ -13,7 +13,6 @@ export const generateToken = async () => {
     });
     let base64Credentials = btoa(`${flipkartAccount.api_key}:${flipkartAccount.secret}`);
 
-    // console.log('base64Credentials :>> ', base64Credentials);
     const config = {
       method: 'get', // Change the HTTP method as needed (e.g., 'post', 'put', 'delete', etc.)
       url: FLIPKART.GENERATE_TOKEN_API,
@@ -32,8 +31,56 @@ export const generateToken = async () => {
   }
 };
 
-let newArr: any = [];
+// export const OrderApi = async () => {
+//   try {
+//     const { access_token: accessToken }: any = await generateToken();
+//     const config = {
+//       method: 'POST',
+//       url: FLIPKART.ORDER_API,
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//         'Content-Type': 'application/json', // Adjust the content type if necessary
+//       },
+//       data: {
+//         filter: {
+//           type: 'postDispatch',
+//           states: ['DELIVERED'],
+//         },
+//       },
+//     };
+//     const {data} = await axios(config);
+//     console.log('data :>> ', data);
+//     const b = data.nextPageUrl.replace(/'/g, '')
+
+//     if(data.hasMore){
+//       const config = {
+//         method: 'POST',
+//         url: `https://api.flipkart.net/sellers${b}`,
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//           'Content-Type': 'application/json', // Adjust the content type if necessary
+//         },
+//         data: {
+//           filter: {
+//             type: 'postDispatch',
+//             states: ['DELIVERED'],
+//           },
+//         },
+//       };
+//       console.log('config.url :>> ', config.url);
+//      const  data1 = await axios(config)
+//      console.log('data1 :>> ', data1);
+//     }
+//     if (!data) {
+//       return [];
+//     }
+//     return { order_data:[data.ship] };
+//   } catch (error) {
+//     return error;
+//   }
+// };
 export async function fetchShipments(config: any) {
+  const newArr: any = [];
   try {
     const { access_token: accessToken }: any = await generateToken();
     const header = {
@@ -46,14 +93,14 @@ export async function fetchShipments(config: any) {
     const nextUrl = data.nextPageUrl.replace(/'/g, '');
     if (data.hasMore) {
       newArr.push(...data.shipments);
-
       const config = {
         method: 'GET',
         url: `https://api.flipkart.net/sellers${nextUrl}`,
       };
-      await fetchShipments(config);
+      const shipments = await fetchShipments(config);
+      newArr.push(...shipments.data);
     }
-    return { data: newArr };
+    return { data: newArr, accessToken };
   } catch (error) {
     throw new Error('axios shipment error');
   }
