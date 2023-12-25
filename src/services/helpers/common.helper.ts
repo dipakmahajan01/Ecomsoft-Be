@@ -3,6 +3,8 @@ import { EShipmentType, EShipmentZones } from '../common.types';
 import { FLIPKART } from '../../common/global-constants';
 import RateCard from '../../model/rateCard.model';
 import { generatePublicId, setTimesTamp } from '../../common/common-function';
+import { logsError } from '../../lib';
+import UserCredential from '../../model/user_credential.model';
 
 export const generateToken = async (apiKey: string, secret: string) => {
   try {
@@ -19,10 +21,13 @@ export const generateToken = async (apiKey: string, secret: string) => {
     if (!data && !data.data.access_token) {
       throw new Error(`Token not found in response for apiKet:- ${apiKey} secret:- ${secret}`);
     }
+
+    // Store auth token in user credentials.
+    await UserCredential.findOneAndUpdate({ api_key: apiKey, secret }, { auth_token: data.access_token });
+
     return data.access_token;
   } catch (error: any) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    logsError(error, error.response?.data);
     if (!axios.isAxiosError(error)) {
       throw new Error(`Something went wrong... Please check. Message:- ${error.message}  errorCode: ${error.name}`);
     }

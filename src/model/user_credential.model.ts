@@ -7,6 +7,7 @@ export interface IUserCredentialModel {
   user_id: string;
   api_key: string;
   secret: string;
+  auth_token: string;
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
@@ -22,6 +23,7 @@ const userCredentialSchema = new Schema({
   user_id: { type: String },
   api_key: { type: String },
   secret: { type: String },
+  auth_token: { type: String },
   account_name: { type: String },
   is_deleted: { type: Boolean, default: false },
   created_at: { type: String },

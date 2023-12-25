@@ -4,7 +4,7 @@ const getApplicableRate = (price: number, table: any[]) => {
   return table.find((row) => row.max_item_val >= price && row.min_item_val <= price);
 };
 
-const returnPercentageOf = (val, percentage) => {
+const returnPercentageOf = (val: number, percentage: number) => {
   return (val * percentage) / 100;
 };
 

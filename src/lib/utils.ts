@@ -94,10 +94,10 @@ export const logsErrorAndUrl = (req: { url: any }, error: any) => {
   logger.error(`${errorMessage}, time: ${new Date().toISOString()}, path: ${req.url}`, errorStack);
 };
 
-export const logsError = (error: any) => {
+export const logsError = (error: any, data?: any) => {
   const errorMessage = typeof error === 'object' ? error.message : error;
   const errorStack = typeof error === 'object' ? error.stack : null;
-  logger.error(`${errorMessage}, time: ${new Date().toISOString()}`, errorStack);
+  logger.error(`${errorMessage}, time: ${new Date().toISOString()}`, errorStack, data);
 };
 
 export const logInfo = (msg: string, data: any) => {

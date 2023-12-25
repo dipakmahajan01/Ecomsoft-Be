@@ -47,6 +47,7 @@ export const handleInsertCancelOrder = async () => {
           apiKey: account.api_key,
           secret: account.secret,
           axiosConfig,
+          token: account.auth_token,
         });
 
         const orderData = extractOrders(shipmentsData);
