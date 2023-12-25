@@ -8,7 +8,7 @@ import UserCredential from '../../model/user_credential.model';
 export const addMarketPlaceCred = async (req: Request, res: Response) => {
   try {
     const { user_id: userId } = getUserData(req);
-    const { api_key: apiKey, secret, market_place_name: marketPlaceName, account_name: accountName } = req.body;
+    const { api_key: apiKey, secret, market_place_name: marketPlaceName, account_name: accountName, badge } = req.body;
     // already exists UserCredential
     const foundCredentials = await UserCredential.findOne({ api_key: apiKey, is_deleted: false });
     if (foundCredentials) {
@@ -23,6 +23,7 @@ export const addMarketPlaceCred = async (req: Request, res: Response) => {
       platform_id: platformId,
       market_place_name: marketPlaceName,
       account_name: accountName,
+      badge,
       api_key: apiKey,
       secret,
       user_id: userId,

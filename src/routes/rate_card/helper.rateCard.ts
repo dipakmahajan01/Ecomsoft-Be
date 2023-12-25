@@ -173,20 +173,26 @@ export function extractShippingFees(shippingFeeData: ShippingFeeData): {
   return result;
 }
 
-export function extractReverseShippingFees(shippingFeeData: ShippingFeeData): TShippingFee[] {
-  const badge = Object.keys(shippingFeeData.response)[0];
-  const fulfillmentProfile = shippingFeeData.response[badge][Object.keys(shippingFeeData.response[badge])[0]];
+export function extractReverseShippingFees(shippingFeeData: ShippingFeeData): {
+  [serverProfile: string]: TShippingFee[];
+} {
+  const badge: string = Object.keys(shippingFeeData.response)[0];
+  const fulfillmentProfile = shippingFeeData.response[badge];
+  let result = {};
+  for (let [key, value] of Object.entries(fulfillmentProfile)) {
+    const shippingFees: TShippingFee[] = Object.entries(value).map(([range, details]) => ({
+      min_weight: parseFloat(range.split('-')[0]),
+      max_weight: parseFloat(range.split('-')[1] || 'Infinity'),
+      fees_for_every: details.attributes.constant,
+      local: details.columns.local.value,
+      zonal: details.columns.zonal.value,
+      national: details.columns.national.value,
+    }));
 
-  const shippingFees: TShippingFee[] = Object.entries(fulfillmentProfile).map(([range, details]) => ({
-    min_weight: parseFloat(range.split('-')[0]),
-    max_weight: parseFloat(range.split('-')[1] || 'Infinity'),
-    fees_for_every: details.attributes.constant,
-    local: details.columns.local.value,
-    zonal: details.columns.zonal.value,
-    national: details.columns.national.value,
-  }));
+    result[key] = shippingFees;
+  }
 
-  return shippingFees;
+  return result;
 }
 
 export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any>): void {
@@ -202,18 +208,39 @@ export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any
   }
 }
 
-// export async function returnTheRateCardData(fnsCode) {
-//   function mergeObjects(obj1, obj2) {
-//     for (const key in obj2) {
-//       if (key in obj2) {
-//         if (key in obj1 && typeof obj1[key] === 'object' && typeof obj2[key] === 'object') {
-//           obj1[key] = mergeObjects(obj1[key], obj2[key]);
-//         } else if (obj1[key] !== obj2[key]) {
-//           obj1[key] = obj2[key];
+// async function returnTheRateCardData(fnsCode) {
+//   function deepMerge(...objs) {
+//     function getType(obj) {
+//       return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+//     }
+//     function mergeObj(clone, obj) {
+//       for (let [key, value] of Object.entries(obj)) {
+//         let type = getType(value);
+//         if (clone[key] !== undefined && getType(clone[key]) === type && ['array', 'object'].includes(type)) {
+//           clone[key] = deepMerge(clone[key], value);
+//         } else {
+//           clone[key] = structuredClone(value);
 //         }
 //       }
 //     }
-//     return obj1;
+//     let clone = structuredClone(objs.shift());
+//     for (let obj of objs) {
+//       let type = getType(obj);
+//       if (getType(clone) !== type) {
+//         clone = structuredClone(obj);
+//         continue;
+//       }
+
+//       if (type === 'array') {
+//         clone = [...clone, ...structuredClone(obj)];
+//       } else if (type === 'object') {
+//         mergeObj(clone, obj);
+//       } else {
+//         clone = obj;
+//       }
+//     }
+
+//     return clone;
 //   }
 
 //   function getFormattedDate() {
@@ -254,10 +281,7 @@ export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any
 //     }
 //   }
 
-//   const result = mergeObjects(data.NON_FBF, data.FBF);
-
-//   await fetch('localhost:3000/api/internal/rateCard', { method: 'POST', body: JSON.stringify({ fnsCode }) }).then(
-//     (res) => res.json(),
-//   );
+//   const result = deepMerge(data.NON_FBF, data.FBF);
+//   console.log(result);
 //   return result;
 // }

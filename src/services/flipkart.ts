@@ -77,8 +77,8 @@ export const generateToken = async () => {
 //     return error;
 //   }
 // };
-let newArr: any = [];
 export async function fetchShipments(config: any) {
+  const newArr: any = [];
   try {
     const { access_token: accessToken }: any = await generateToken();
     const header = {
@@ -91,14 +91,14 @@ export async function fetchShipments(config: any) {
     const nextUrl = data.nextPageUrl.replace(/'/g, '');
     if (data.hasMore) {
       newArr.push(...data.shipments);
-
       const config = {
         method: 'GET',
         url: `https://api.flipkart.net/sellers${nextUrl}`,
       };
-      await fetchShipments(config);
+      const shipments = await fetchShipments(config);
+      newArr.push(...shipments.data);
     }
-    return { data: newArr };
+    return { data: newArr, accessToken };
   } catch (error) {
     throw new Error('axios shipment error');
   }

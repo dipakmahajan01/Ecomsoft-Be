@@ -28,7 +28,12 @@ export interface IOrder {
   return_order_shipment_status: string;
   return_order_shipment_id: string;
   order_id: string;
+  // For calculations......
   commission: number;
+  shippingFee: number;
+  fixedFee: number;
+  reverseShippingFee: number;
+  collectionFee: number;
   net_profit: number;
   created_by: string;
   updated_by: string;
@@ -54,14 +59,19 @@ const OrderSchema = new Schema({
   quantity: { type: Number },
   paymentType: { type: String },
   cancellationDate: { type: String },
-  // For Return orders... 
+  // For Return orders...
   return_order_status: { type: String },
   return_order_reason: { type: String },
   return_order_sub_reason: { type: String },
   return_order_shipment_status: { type: String },
   return_order_shipment_id: { type: String },
   serviceProfile: { type: String },
+  // For calculation....
   commission: { type: Number },
+  shippingFee: { type: Number },
+  fixedFee: { type: Number },
+  reverseShippingFee: { type: Number },
+  collectionFee: { type: Number },
   net_profit: { type: Number },
   created_by: { type: String },
   updated_by: { type: String },

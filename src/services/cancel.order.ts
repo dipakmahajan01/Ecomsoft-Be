@@ -1,58 +1,9 @@
-/* eslint-disable no-param-reassign */
 /* eslint-disable no-console */
-import axios, { AxiosRequestConfig } from 'axios';
 import { FLIPKART, FLIPKART_SERVICE_PROFILE, FLIPKART_STATUS, STATUS } from '../common/global-constants';
 import order from '../model/order.model';
 import UserCredential from '../model/user_credential.model';
-import { generatePublicId, setTimesTamp } from '../common/common-function';
-import { calculateCommission, extractOrders, fetchAndCacheIfNeeded, generateToken } from './common_helper';
-
-export const getCancelOrders = async ({
-  apiKey,
-  secret,
-  axiosConfig,
-}: {
-  apiKey: string;
-  secret: string;
-  axiosConfig: AxiosRequestConfig;
-}) => {
-  let orderList = [];
-  try {
-    if (!axiosConfig.headers?.Authorization) {
-      const token = await generateToken(apiKey, secret);
-      axiosConfig.headers.Authorization = `Bearer ${token}`;
-    }
-
-    const { data } = await axios(axiosConfig);
-    const { hasMore, nextPageUrl, shipments } = data;
-    // const orders = extractCancelOrderData(shipments);
-    orderList = shipments;
-    if (!hasMore) {
-      return orderList;
-    }
-
-    const newAxiosConfig = {
-      ...axiosConfig,
-      method: 'GET',
-      url: `${FLIPKART.FLIPKART_BASE_URL}/sellers${nextPageUrl}`,
-      data: null,
-    };
-    const newOrderList = await getCancelOrders({ apiKey, secret, axiosConfig: newAxiosConfig });
-    return [...orderList, ...newOrderList];
-  } catch (error: any) {
-    console.log('Need to handle the error here........', error?.response?.data ?? error.message);
-    if (!axios.isAxiosError(error)) {
-      throw error;
-    }
-    const errorCode = error.response.data?.error;
-    if (errorCode === 'unauthorized' || errorCode === 'invalid_token') {
-      delete axiosConfig.headers.Authorization;
-      const newOrderList = await getCancelOrders({ apiKey, secret, axiosConfig });
-      return [...orderList, ...newOrderList];
-    }
-    throw error;
-  }
-};
+import { calculateCommission, extractOrders, fetchAndCacheIfNeeded, modifyAuthorAndTimeStamp } from './helpers';
+import { getOrders } from './get.orders';
 
 const getBodyData = ({ from, to }: { from: string; to: string }) => {
   return {
@@ -75,21 +26,13 @@ const getBodyData = ({ from, to }: { from: string; to: string }) => {
   };
 };
 
-const updateAuthorAndTimeStamp = (author: string, doc: any) => {
-  doc.created_by = author;
-  doc.updated_by = author;
-  doc.created_at = setTimesTamp();
-  doc.updated_at = setTimesTamp();
-  doc.order_id = generatePublicId();
-};
-
 export const handleInsertCancelOrder = async () => {
   try {
     const flipkartAccount = await UserCredential.find({
-      user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f',
+      user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f', // TODO - Remove this.
       is_deleted: false,
     });
-    // const today = formatDateToYYYYMMDD(getToday());
+    // const today = formatDateToYYYYMMDD(getToday()); // TODO - Use ISO string. helper function are in global-function use them.
     // const tomorrow = formatDateToYYYYMMDD(getTomorrow());
     const cachedRateCardDocs = new Map();
     for (let account of flipkartAccount) {
@@ -100,7 +43,7 @@ export const handleInsertCancelOrder = async () => {
           data: getBodyData({ from: '2023-04-01', to: '2023-12-30' }),
           headers: {},
         };
-        const shipmentsData = await getCancelOrders({
+        const { orderList: shipmentsData } = await getOrders({
           apiKey: account.api_key,
           secret: account.secret,
           axiosConfig,
@@ -110,7 +53,7 @@ export const handleInsertCancelOrder = async () => {
 
         for (let doc of orderData) {
           if (doc.cancellationReason === FLIPKART_STATUS.SELLER_CANCELLATION) {
-            const rateCardData = await fetchAndCacheIfNeeded(cachedRateCardDocs, doc.fsn_code);
+            const rateCardData = await fetchAndCacheIfNeeded(cachedRateCardDocs, doc.fsn_code); // TODO - Need to fetch all fsn_code at once for performance.
 
             if (rateCardData) {
               const serverProfile =
@@ -127,7 +70,7 @@ export const handleInsertCancelOrder = async () => {
               doc.status = STATUS.CANCELLED;
             }
           }
-          updateAuthorAndTimeStamp(account.user_id, doc);
+          modifyAuthorAndTimeStamp(account.user_id, doc);
         }
         return await order.insertMany(orderData);
       } catch (error) {
