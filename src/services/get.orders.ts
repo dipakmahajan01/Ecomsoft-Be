@@ -62,7 +62,7 @@ export const getOrdersByIds = async ({
     }
     return result;
   } catch (error: any) {
-    console.log('Need to handle the error here........', error?.response?.data ?? error.message);
+    logsError(error, error?.response?.data);
     if (!axios.isAxiosError(error)) {
       throw error;
     }

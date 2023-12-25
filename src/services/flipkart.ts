@@ -5,6 +5,7 @@ import axios from 'axios';
 import UserCredential from '../model/user_credential.model';
 import { FLIPKART } from '../common/global-constants';
 import order from '../model/order.model';
+import { logInfo, logsError } from '../lib';
 
 export const generateToken = async () => {
   try {
@@ -49,7 +50,6 @@ export const generateToken = async () => {
 //       },
 //     };
 //     const {data} = await axios(config);
-//     console.log('data :>> ', data);
 //     const b = data.nextPageUrl.replace(/'/g, '')
 
 //     if(data.hasMore){
@@ -67,9 +67,7 @@ export const generateToken = async () => {
 //           },
 //         },
 //       };
-//       console.log('config.url :>> ', config.url);
 //      const  data1 = await axios(config)
-//      console.log('data1 :>> ', data1);
 //     }
 //     if (!data) {
 //       return [];
@@ -121,9 +119,9 @@ export const orderStatusCheckApi = async () => {
       },
     };
     const { data } = await axios(config);
-    console.log('data', data);
+    logInfo('data', data);
   } catch (error: any) {
-    console.log('error.message', error?.response?.data);
+    logsError(error, error?.response?.data);
     return error;
   }
 };

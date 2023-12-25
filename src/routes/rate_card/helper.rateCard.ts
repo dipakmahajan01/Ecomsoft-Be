@@ -264,7 +264,6 @@ export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any
 //   for (let fulfillmentType of fulfillmentTypes) {
 //     for (let [index, bdg] of Object.entries(badge)) {
 //       const rateCardData = await fetch(returnUrl(fnsCode, fulfillmentType, bdg, index != 0)).then((res) => res.json());
-//       console.log(index != 0, rateCardData);
 //       if (index == 0) {
 //         data[fulfillmentType] = rateCardData;
 //       } else {
