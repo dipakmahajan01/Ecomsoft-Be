@@ -2,6 +2,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { FLIPKART } from '../common/global-constants';
 import { generateToken, sliceIntoBatches } from './helpers';
+import { logsError } from '../lib';
 
 const FLIPKART_MAX_ORDER_GET_LIMIT = 25;
 
@@ -60,7 +61,7 @@ export const getReturnOrders = async ({
     }
     return result;
   } catch (error: any) {
-    console.log('Need to handle the error here........', error?.response?.data ?? error.message);
+    logsError(error, error?.response?.data);
     if (!axios.isAxiosError(error)) {
       throw error;
     }

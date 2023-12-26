@@ -8,6 +8,7 @@ import {
   generateToken,
   sliceIntoBatches,
 } from './helpers';
+import { logsError } from '../lib';
 
 const FLIPKART_MAX_SHIPMENT_GET_LIMIT = 100;
 
@@ -61,7 +62,7 @@ export const getOrdersByIds = async ({
     }
     return result;
   } catch (error: any) {
-    console.log('Need to handle the error here........', error?.response?.data ?? error.message);
+    logsError(error, error?.response?.data);
     if (!axios.isAxiosError(error)) {
       throw error;
     }
@@ -78,47 +79,49 @@ export const getOrders = async ({
   apiKey,
   secret,
   axiosConfig,
+  token,
 }: {
   apiKey: string;
   secret: string;
   axiosConfig: AxiosRequestConfig;
+  token: string;
 }) => {
   let orderList = [];
+  let accessToken = token;
+  let reqConfig = { ...axiosConfig };
   try {
-    let token;
-    if (!axiosConfig.headers?.Authorization) {
-      token = await generateToken(apiKey, secret);
-      // eslint-disable-next-line no-param-reassign
-      axiosConfig.headers.Authorization = `Bearer ${token}`;
+    if (!accessToken) {
+      accessToken = await generateToken(apiKey, secret);
+      if (!accessToken) return orderList;
     }
+    reqConfig.headers.Authorization = `Bearer ${accessToken}`;
 
-    const { data } = await axios(axiosConfig);
+    const { data } = await axios(reqConfig);
     const { hasMore, nextPageUrl, shipments } = data;
     // const orders = extractCancelOrderData(shipments);
     orderList = shipments;
     if (!hasMore) {
-      return { orderList, accessToken: token };
+      return { orderList, accessToken };
     }
 
-    const newAxiosConfig = {
-      ...axiosConfig,
+    reqConfig = {
+      ...reqConfig,
       method: 'GET',
       url: `${FLIPKART.FLIPKART_BASE_URL}/sellers${nextPageUrl}`,
       data: null,
     };
-    const newOrderList = await getOrders({ apiKey, secret, axiosConfig: newAxiosConfig });
-    return { orderList: [...orderList, ...newOrderList.orderList], accessToken: newOrderList.accessToken };
+    const pendingOrder = await getOrders({ apiKey, secret, axiosConfig: reqConfig, token: accessToken });
+    return { orderList: [...orderList, ...pendingOrder.orderList], accessToken: pendingOrder.accessToken };
   } catch (error: any) {
-    console.log('Need to handle the error here........', error?.response?.data ?? error.message);
+    logsError(error, error?.response?.data);
     if (!axios.isAxiosError(error)) {
       throw error;
     }
     const errorCode = error.response.data?.error;
     if (errorCode === 'unauthorized' || errorCode === 'invalid_token') {
-      // eslint-disable-next-line no-param-reassign
-      delete axiosConfig.headers.Authorization;
-      const newOrderList = await getOrders({ apiKey, secret, axiosConfig });
-      return { orderList: [...orderList, ...newOrderList.newOrderList], accessToken: newOrderList.accessToken };
+      delete reqConfig.headers.Authorization;
+      const pendingOrder = await getOrders({ apiKey, secret, axiosConfig, token: accessToken });
+      return { orderList: [...orderList, ...pendingOrder.orderList], accessToken: pendingOrder.accessToken };
     }
     throw error;
   }

@@ -25,7 +25,6 @@ export const orderApiDataInsert = async () => {
       },
     };
     const { data } = await fetchShipments(config);
-    // console.log('data', data);
     let orderArr = [];
     let orderArrInsertData = {};
     const orderIdsArray = [];

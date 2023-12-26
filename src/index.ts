@@ -8,7 +8,7 @@ import cors from 'cors';
 import { StatusCodes } from 'http-status-codes';
 // import { Server } from 'socket.io';
 import logger from './lib/logger';
-import { responseValidation } from './lib';
+import { logInfo, responseValidation } from './lib';
 import authRoutes from './routes/auth';
 import sellerRoute from './routes/sellers';
 import marketPlaceRoutes from './routes/marketplace';
@@ -193,7 +193,7 @@ app.use((req: Request, res: Response) => {
 
 app.use((error: any, req: Request, res: Response) => {
   // , next: NextFunction
-  console.log('app error----------------->', error.message);
+  logInfo('app error----------------->', error.message);
   return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
     responseValidation(
       StatusCodes.INTERNAL_SERVER_ERROR,

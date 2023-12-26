@@ -15,8 +15,6 @@
 //       apiKey: 'a66008645569619492a5797191b383930203',
 //       secret: '174134c0729930f2ca3a5f9c5eded7ff6',
 //     });
-//     console.log(returnVal);
-//     console.log('====================================================');
 //     const shipmentDoc = await order.find({ status: 'DELIVERED' }).distinct('order_item_id');
 //     const shiptmentVal = await getShipmentsType({
 //       orderIDs: shipmentDoc,
@@ -25,9 +23,8 @@
 //       secret: '174134c0729930f2ca3a5f9c5eded7ff6',
 //     });
 
-//     console.log(shiptmentVal);
 //   } catch (error) {
-//     console.log('Error while testing......', error);
+//     logsError(error, 'Error while testing......');
 //   }
 // };
 

@@ -4,6 +4,7 @@ import order from '../model/order.model';
 import UserCredential from '../model/user_credential.model';
 import { calculateCommission, extractOrders, fetchAndCacheIfNeeded, modifyAuthorAndTimeStamp } from './helpers';
 import { getOrders } from './get.orders';
+import { logsError } from '../lib';
 
 const getBodyData = ({ from, to }: { from: string; to: string }) => {
   return {
@@ -47,6 +48,7 @@ export const handleInsertCancelOrder = async () => {
           apiKey: account.api_key,
           secret: account.secret,
           axiosConfig,
+          token: account.auth_token,
         });
 
         const orderData = extractOrders(shipmentsData);
@@ -74,13 +76,13 @@ export const handleInsertCancelOrder = async () => {
         }
         return await order.insertMany(orderData);
       } catch (error) {
-        console.log(`Error while processing account. API_KEY - ${account.api_key} SECRET - ${account.secret}`);
+        logsError(error, `Error while processing account. API_KEY - ${account.api_key} SECRET - ${account.secret}`);
       }
     }
 
     return null;
   } catch (error) {
-    console.log('error in cancel order cron job........', error);
+    logsError(error, 'error in cancel order cron job........');
     return null;
   }
 };
