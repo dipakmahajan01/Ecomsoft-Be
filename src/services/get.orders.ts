@@ -12,7 +12,7 @@ import { logsError } from '../lib';
 
 const FLIPKART_MAX_SHIPMENT_GET_LIMIT = 100;
 
-const extractOrdersFromShipment = (shipments) => {
+const extractOrdersFromShipment = (shipments): { [orderId: string]: any } => {
   const result = {};
   const orderItems = extractOrderItemsFromShipment(shipments);
   const packageInfo = extractOrderWeightInfo(shipments);
@@ -34,7 +34,7 @@ export const getOrdersByIds = async ({
   token: string;
   apiKey: string;
   secret: string;
-}) => {
+}): Promise<{ [orderId: string]: any }> => {
   let result = [];
   try {
     let accessToken = token;
@@ -85,14 +85,14 @@ export const getOrders = async ({
   secret: string;
   axiosConfig: AxiosRequestConfig;
   token: string;
-}) => {
+}): Promise<{ orderList: any[]; accessToken: string }> => {
   let orderList = [];
   let accessToken = token;
   let reqConfig = { ...axiosConfig };
   try {
     if (!accessToken) {
       accessToken = await generateToken(apiKey, secret);
-      if (!accessToken) return orderList;
+      if (!accessToken) return { orderList, accessToken };
     }
     reqConfig.headers.Authorization = `Bearer ${accessToken}`;
 

@@ -100,8 +100,8 @@ export const logsError = (error: any, data?: any) => {
   logger.error(`${errorMessage}, time: ${new Date().toISOString()}`, errorStack, data);
 };
 
-export const logInfo = (msg: string, data: any) => {
-  logger.info(msg, data);
+export const logInfo = (msg: string, ...meta: any) => {
+  logger.info(msg, ...meta);
 };
 
 export function extractJwtToken(authorizationHeader: string) {

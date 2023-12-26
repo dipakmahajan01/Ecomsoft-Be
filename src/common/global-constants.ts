@@ -62,6 +62,7 @@ export const FLIPKART_SERVICE_PROFILE = {
 export const FLIPKART_ORDER_STATUS = {
   DELIVERED: 'DELIVERED',
   RETURNED: 'RETURNED',
+  CANCELLED: 'CANCELLED',
 };
 
 export const STATUS = {
@@ -78,3 +79,5 @@ export const FLIPKART_PAYMENT_TYPES = {
   COD: 'COD',
   POSTPAID: 'POSTPAID',
 };
+
+export const CHECK_STATUS_OF_DAYS = 8;
