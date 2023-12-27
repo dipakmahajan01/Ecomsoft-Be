@@ -1,6 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
 export interface IOrder {
+  order_id: string;
   order_item_id: string;
   flipkart_order_id: string;
   Hsn_code: string;
@@ -27,7 +28,7 @@ export interface IOrder {
   return_order_sub_reason: string;
   return_order_shipment_status: string;
   return_order_shipment_id: string;
-  order_id: string;
+
   // For calculations......
   commission: number;
   shippingFee: number;
@@ -44,9 +45,9 @@ export interface IOrder {
   deleted_at: string;
 }
 const OrderSchema = new Schema({
-  order_id: { type: String },
+  order_id: { type: String, unique: true, required: true },
   order_item_id: { type: String },
-  flipkart_order_id: { type: String },
+  flipkart_order_id: { type: String, unique: true, required: true },
   Hsn_code: { type: Number },
   fsn_code: { type: String },
   status: { type: String },

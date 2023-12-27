@@ -1,5 +1,6 @@
+import { generatePublicId } from '../common/common-function';
 import { FLIPKART, FLIPKART_ORDER_STATUS, FLIPKART_SERVICE_PROFILE } from '../common/global-constants';
-import { logInfo, logsError } from '../lib';
+import { logsError } from '../lib';
 import order from '../model/order.model';
 import UserCredential from '../model/user_credential.model';
 import { getOrders } from './get.orders';
@@ -69,8 +70,9 @@ export const handlerTodaysOrders = async () => {
             ...orderShipmentType[order.order_item_id],
           };
         });
-
+        const orderDatas = [];
         for (let doc of orderData) {
+          // console.log('orderData', doc)
           if (doc.flipkart_status === FLIPKART_ORDER_STATUS.DELIVERED) {
             const rateCardData = await fetchAndCacheIfNeeded(cachedRateCardDocs, doc.fsn_code); // TODO - Need to fetch all fsn_code at once for performance.
             if (rateCardData) {
@@ -111,11 +113,35 @@ export const handlerTodaysOrders = async () => {
               doc.collectionFee = collectionFee;
             }
             modifyAuthorAndTimeStamp(account.user_id, doc);
+
+            orderDatas.push(doc);
+            const orders = await order.findOne({ flipkart_order_id: doc.flipkart_order_id });
+            if (!orders) {
+              await order.create({
+                order_id: generatePublicId(),
+                order_item_id: doc.order_item_id,
+                flipkart_order_id: doc.flipkart_order_id,
+                Hsn_code: doc.Hsn_code,
+                fsn_code: doc.fsn_code,
+                flipkart_status: doc.flipkart_status,
+                order_date: doc.order_date,
+                sku: doc.sku,
+                priceComponents: doc.priceComponents,
+                quantity: doc.quantity,
+                paymentType: doc.paymentType,
+                cancellationDate: doc.cancellationDate,
+                serviceProfile: doc.serviceProfile,
+                commission: doc.commission,
+                shippingFee: doc.shippingFee,
+                fixedFee: doc.fixedFee,
+                reverseShippingFee: doc.reverseShippingFee,
+                collectionFee: doc.collectionFee,
+                net_profit: doc.net_profit,
+              });
+            }
           }
         }
-        // const addedDocs = await order.updateMany({ flipkart_order_id: { $in: orderIds } }, orderData, { upsert: true }); // TODO :- This need to implement bsc this will be efficient. and this will also help us if in future we need to run the cron 2 -3 times a day. (duplicates order issue)
-        const addedDocs = await order.insertMany(orderData);
-        logInfo('added doc from today cronjob::', addedDocs);
+        // TODO :- This need to implement bsc this will be efficient. and this will also help us if in future we need to run the cron 2 -3 times a day. (duplicates order issue)
       } catch (error) {
         logsError(error);
       }

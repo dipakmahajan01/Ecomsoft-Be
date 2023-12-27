@@ -1,4 +1,4 @@
-import { uuid } from 'uuidv4';
+import uuid from 'react-uuid';
 import dayjs from 'dayjs';
 import bcrypt from 'bcrypt';
 import { Request } from 'express';
