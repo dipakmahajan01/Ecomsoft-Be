@@ -50,3 +50,17 @@ export function getEndOfDay(date = new Date()) {
   date.setHours(23, 59, 59, 999);
   return date;
 }
+
+export function getDateBeforeDays(beforeDays: number) {
+  const thatDay = new Date();
+  thatDay.setDate(thatDay.getDate() - beforeDays);
+  thatDay.setHours(0, 0, 0, 0);
+  return thatDay;
+}
+export const convertIntoUnix = (date) => {
+  const specificDate = dayjs(date);
+
+  // Convert it to Unix timestamp in seconds
+  const unixTimestamp = specificDate.unix();
+  return unixTimestamp;
+};

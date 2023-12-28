@@ -155,4 +155,4 @@ export const handlerTodaysOrders = async () => {
 };
 
 // TODO :- Names of file and file organization needs to refactor only related to services folder.
-// TODO :- Token expired time is 60 days. so we should save the token in userCredential collection this way we don't have to call the getToken multiple time. Only needs to call when tokens gets expired. We will know if the token is expired or not by the flipkart unauthorize or expired token error.
+// TODO :- Create order status check
