@@ -1,4 +1,4 @@
-import { getDateBeforeDays } from '../common/common-function';
+import { convertIntoUnix, getDateBeforeDays } from '../common/common-function';
 import { CHECK_STATUS_OF_DAYS, FLIPKART_ORDER_STATUS } from '../common/global-constants';
 import { logInfo, logsError } from '../lib';
 import order from '../model/order.model';
@@ -14,8 +14,11 @@ export const handleOrderStatusCheck = async () => {
     });
 
     const dateBeforeDays = getDateBeforeDays(CHECK_STATUS_OF_DAYS);
+    // console.log('dateBeforeDays', dateBeforeDays);
+    const unixDate = convertIntoUnix(dateBeforeDays);
+    // console.log('unixDate', unixDate);
     for (let account of flipkartAccount) {
-      const last7daysOrders = await order.find({ created_at: { $lt: dateBeforeDays } });
+      const last7daysOrders = await order.find({ created_at: { $lt: unixDate } });
       const orderIds = last7daysOrders.map((order) => order.order_item_id);
       const orders = await getOrdersByIds({
         orderIDs: orderIds,
@@ -67,6 +70,8 @@ export const handleOrderStatusCheck = async () => {
 
       logInfo('data', updatedReturnedOrders, cancellationOrders);
       // Query to find and update many orders.
+
+      //  const updateData = await order.find({flipkart_order_id:flipkartOrder})
     }
   } catch (error: any) {
     logsError(error, error.response?.data);

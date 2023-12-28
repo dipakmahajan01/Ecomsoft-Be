@@ -57,3 +57,10 @@ export function getDateBeforeDays(beforeDays: number) {
   thatDay.setHours(0, 0, 0, 0);
   return thatDay;
 }
+export const convertIntoUnix = (date) => {
+  const specificDate = dayjs(date);
+
+  // Convert it to Unix timestamp in seconds
+  const unixTimestamp = specificDate.unix();
+  return unixTimestamp;
+};
