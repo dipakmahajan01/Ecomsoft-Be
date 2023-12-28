@@ -100,6 +100,7 @@ export const getOrders = async ({
     const { hasMore, nextPageUrl, shipments } = data;
     // const orders = extractCancelOrderData(shipments);
     orderList = shipments;
+    console.log(orderList.length, hasMore);
     if (!hasMore) {
       return { orderList, accessToken };
     }

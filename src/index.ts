@@ -24,7 +24,7 @@ app.use(cors());
 // const io = new Server(server,{cors: {origin: "*"}});
 // app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '1tb' }));
 app.use((req, res, next) => {
   try {
     // set header for swagger.

@@ -1,6 +1,5 @@
 import { FLIPKART, FLIPKART_ORDER_STATUS, FLIPKART_SERVICE_PROFILE } from '../common/global-constants';
-import { logInfo, logsError } from '../lib';
-import order from '../model/order.model';
+import { logsError } from '../lib';
 import UserCredential from '../model/user_credential.model';
 import { getOrders } from './get.orders';
 import {
@@ -114,8 +113,8 @@ export const handlerTodaysOrders = async () => {
           }
         }
         // const addedDocs = await order.updateMany({ flipkart_order_id: { $in: orderIds } }, orderData, { upsert: true }); // TODO :- This need to implement bsc this will be efficient. and this will also help us if in future we need to run the cron 2 -3 times a day. (duplicates order issue)
-        const addedDocs = await order.insertMany(orderData);
-        logInfo('added doc from today cronjob::', addedDocs);
+        // const addedDocs = await order.insertMany(orderData);
+        // logInfo('added doc from today cronjob::', addedDocs);
       } catch (error) {
         logsError(error);
       }

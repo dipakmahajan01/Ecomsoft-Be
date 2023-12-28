@@ -15,8 +15,8 @@ export const handleOrderStatusCheck = async () => {
 
     const dateBeforeDays = getDateBeforeDays(CHECK_STATUS_OF_DAYS);
     for (let account of flipkartAccount) {
-      const last7daysOrders = await order.find({ created_at: { $lt: dateBeforeDays } });
-      const orderIds = last7daysOrders.map((order) => order.order_item_id);
+      const last8daysOrders = await order.find({ created_at: { $lt: dateBeforeDays } });
+      const orderIds = last8daysOrders.map((order) => order.order_item_id);
       const orders = await getOrdersByIds({
         orderIDs: orderIds,
         token: account.auth_token,
@@ -29,7 +29,7 @@ export const handleOrderStatusCheck = async () => {
       const OldReturnOrdersIds = [];
       const cancellationOrders = [];
 
-      last7daysOrders.forEach((order) => {
+      last8daysOrders.forEach((order) => {
         const latestOrder = orders[order.order_item_id];
         const latestStatus = latestOrder.flipkart_status;
         const oldStatus = order.flipkart_status;
