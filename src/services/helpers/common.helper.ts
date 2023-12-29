@@ -45,10 +45,16 @@ export const fetchAndCacheIfNeeded = async (cache: any, fsnCode: string) => {
   if (!cache.has(fsnCode)) {
     const rateCard = await RateCard.findOne({ fsn_code: fsnCode, needs_to_add: false }).lean();
     if (!rateCard) {
-      await RateCard.create({
-        fsn_code: fsnCode,
-        needs_to_add: true,
-      });
+      await RateCard.findOneAndUpdate(
+        {
+          fsn_code: fsnCode,
+        },
+        {
+          fsn_code: fsnCode,
+          needs_to_add: true,
+        },
+        { upsert: true },
+      );
       return null;
     }
     cache.set(fsnCode, rateCard);

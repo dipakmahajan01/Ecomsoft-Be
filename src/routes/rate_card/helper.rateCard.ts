@@ -208,7 +208,7 @@ export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any
   }
 }
 
-// async function returnTheRateCardData(fnsCode) {
+// async function returnTheRateCardData(fnsCode, wait = false) {
 //   function deepMerge(...objs) {
 //     function getType(obj) {
 //       return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
@@ -260,27 +260,42 @@ export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any
 
 //   const data = { NON_FBF: {}, FBF: [] };
 
-//   let wait = true;
+//   let w = wait;
 //   for (let fulfillmentType of fulfillmentTypes) {
+//     if (w) {
+//       await new Promise((resolve) => {
+//         setTimeout(() => {
+//           resolve();
+//         }, 60000);
+//       });
+//       w = false;
+//     }
 //     for (let [index, bdg] of Object.entries(badge)) {
 //       const rateCardData = await fetch(returnUrl(fnsCode, fulfillmentType, bdg, index != 0)).then((res) => res.json());
+//       console.log(rateCardData, index != 0);
 //       if (index == 0) {
 //         data[fulfillmentType] = rateCardData;
 //       } else {
 //         data[fulfillmentType].shippingFee.response[bdg] = rateCardData.shippingFee.response[bdg];
 //       }
 //     }
-//     if (wait) {
-//       await new Promise((resolve) => {
-//         setTimeout(() => {
-//           resolve();
-//         }, 60000);
-//       });
-//       wait = false;
-//     }
 //   }
 
 //   const result = deepMerge(data.NON_FBF, data.FBF);
+//   result.fnsCode = fnsCode;
 //   console.log(result);
 //   return result;
+// }
+
+// async function scriptGetRateCardData(fnsCodeList, output) {
+//   let wait = false;
+//   for (let fsnCode of fnsCodeList) {
+//     try {
+//       const rateCardData = await returnTheRateCardData(fsnCode, wait);
+//       wait = true;
+//       output.push(rateCardData);
+//     } catch (error) {
+//       console.log('Error while processing ', fsnCode, error);
+//     }
+//   }
 // }

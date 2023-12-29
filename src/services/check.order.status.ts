@@ -1,5 +1,4 @@
-import { convertIntoUnix, getDateBeforeDays } from '../common/common-function';
-import { CHECK_STATUS_OF_DAYS, FLIPKART_ORDER_STATUS } from '../common/global-constants';
+import { FLIPKART_ORDER_STATUS, STATUS } from '../common/global-constants';
 import { logInfo, logsError } from '../lib';
 import order from '../model/order.model';
 import UserCredential from '../model/user_credential.model';
@@ -13,13 +12,9 @@ export const handleOrderStatusCheck = async () => {
       is_deleted: false,
     });
 
-    const dateBeforeDays = getDateBeforeDays(CHECK_STATUS_OF_DAYS);
-    // console.log('dateBeforeDays', dateBeforeDays);
-    const unixDate = convertIntoUnix(dateBeforeDays);
-    // console.log('unixDate', unixDate);
     for (let account of flipkartAccount) {
-      const last7daysOrders = await order.find({ created_at: { $lt: unixDate } });
-      const orderIds = last7daysOrders.map((order) => order.order_item_id);
+      const last8daysOrders = await order.find({ status: STATUS.ON_GOING });
+      const orderIds = last8daysOrders.map((order) => order.order_item_id);
       const orders = await getOrdersByIds({
         orderIDs: orderIds,
         token: account.auth_token,
@@ -32,7 +27,7 @@ export const handleOrderStatusCheck = async () => {
       const OldReturnOrdersIds = [];
       const cancellationOrders = [];
 
-      last7daysOrders.forEach((order) => {
+      last8daysOrders.forEach((order) => {
         const latestOrder = orders[order.order_item_id];
         const latestStatus = latestOrder.flipkart_status;
         const oldStatus = order.flipkart_status;

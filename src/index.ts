@@ -13,7 +13,7 @@ import authRoutes from './routes/auth';
 import sellerRoute from './routes/sellers';
 import marketPlaceRoutes from './routes/marketplace';
 import rateCardRoutes from './routes/rate_card';
-import { serverDayOrdersStatusUpdate } from './helpers/cron-helper/flipkart.cron';
+import { todaysOrders } from './helpers/cron-helper/flipkart.cron';
 
 dotenv.config();
 
@@ -24,7 +24,7 @@ app.use(cors());
 // const io = new Server(server,{cors: {origin: "*"}});
 // app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '1tb' }));
 app.use((req, res, next) => {
   try {
     // set header for swagger.
@@ -213,8 +213,8 @@ process.on('unhandledRejection', function (reason, promise) {
 if (process.env.IS_JOB === 'true') {
   // orderApiCron();
   // cancelOrderApiCron();
-  serverDayOrdersStatusUpdate();
-  // todaysOrders();
+  todaysOrders();
+  // serverDayOrdersStatusUpdate();
 }
 
 // set socket connection
