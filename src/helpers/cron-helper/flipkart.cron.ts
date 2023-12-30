@@ -27,8 +27,8 @@ export const todaysOrders = () => {
 };
 
 export const serverDayOrdersStatusUpdate = () => {
-  cron.schedule('* * * * *', () => {
-    console.log('serverDayOrdersStatusUpdate cron running');
-    handleOrderStatusCheck();
+  cron.schedule('* * * * *', async () => {
+    console.log('---------------', '7 today order status cron job running-------------------');
+    await handleOrderStatusCheck();
   });
 };
