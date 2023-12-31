@@ -81,3 +81,12 @@ export const FLIPKART_PAYMENT_TYPES = {
 };
 
 export const CHECK_STATUS_OF_DAYS = 8;
+export const DAYS_IN_WHICH_ORDER_SHOULD_RETURNED = 10;
+
+// Config for net profit calculation
+
+export const ORDER_NET_PROFIT = {
+  COMPLETED: ['commission', 'shippingFee', 'fixedFee', 'collectionFee'],
+  REFUND: ['commission', 'shippingFee', 'fixedFee', 'collectionFee', 'reverseShippingFee'],
+  REPLACEMENT: ['commission', 'shippingFee', 'fixedFee', 'collectionFee', 'reverseShippingFee', 'shippingFee'],
+};

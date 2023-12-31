@@ -1,4 +1,4 @@
-import { FLIPKART_PAYMENT_TYPES } from '../../common/global-constants';
+import { FLIPKART_PAYMENT_TYPES, ORDER_NET_PROFIT, STATUS } from '../../common/global-constants';
 
 const getApplicableRate = (price: number, table: any[]) => {
   return table.find((row) => row.max_item_val >= price && row.min_item_val <= price);
@@ -76,4 +76,33 @@ export const calculateCollectionFee = ({
   }
   const val = returnPercentageOf(customerPrice, payment.value);
   return val;
+};
+
+// RELETED TO NET PROFIT
+
+export const returnNetProfitOf = (order: any, type: string) => {
+  let loss = 0;
+  const { sellingPrice } = order.priceComponents;
+  switch (type) {
+    case STATUS.COMPLETED:
+      ORDER_NET_PROFIT.COMPLETED.forEach((fee) => {
+        loss += order[fee];
+      });
+      return sellingPrice - loss;
+
+    case STATUS.CUSTOMER_RETURN:
+      if (!order.isReplacement) {
+        ORDER_NET_PROFIT.REFUND.forEach((fee) => {
+          loss += order[fee];
+        });
+        return -(sellingPrice - loss);
+      }
+      ORDER_NET_PROFIT.REPLACEMENT.forEach((fee) => {
+        loss += order[fee];
+      });
+      return sellingPrice - loss;
+
+    default:
+      throw new Error(`Unexpected status found. STATUS: ${type}`);
+  }
 };

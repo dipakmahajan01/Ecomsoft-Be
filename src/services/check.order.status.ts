@@ -1,9 +1,11 @@
-import { FLIPKART_ORDER_STATUS, STATUS } from '../common/global-constants';
+import { differenceBetweenTwoDate, setTimesTamp } from '../common/common-function';
+import { DAYS_IN_WHICH_ORDER_SHOULD_RETURNED, FLIPKART_ORDER_STATUS, STATUS } from '../common/global-constants';
 import { logInfo, logsError } from '../lib';
 import order from '../model/order.model';
 import UserCredential from '../model/user_credential.model';
 import { getOrdersByIds } from './get.orders';
 import { getReturnOrders } from './return.order';
+import { returnNetProfitOf } from './helpers';
 
 export const handleOrderStatusCheck = async () => {
   try {
@@ -26,19 +28,26 @@ export const handleOrderStatusCheck = async () => {
       const oldReturnOrders = [];
       const OldReturnOrdersIds = [];
       const cancellationOrders = [];
+      const completed = [];
 
       last8daysOrders.forEach((order) => {
         const latestOrder = orders[order.order_item_id];
         const latestStatus = latestOrder.flipkart_status;
         const oldStatus = order.flipkart_status;
 
+        // 10 days validation
+        const isCompleted =
+          differenceBetweenTwoDate(+order.order_date, setTimesTamp()) >= DAYS_IN_WHICH_ORDER_SHOULD_RETURNED;
+
+        if (isCompleted) {
+          const updatedOrder = { ...order };
+          updatedOrder.net_profit = returnNetProfitOf(updatedOrder, STATUS.COMPLETED);
+          updatedOrder.status = STATUS.COMPLETED;
+          completed.push(updatedOrder);
+        }
+        // compalete status update with calculation
         if (latestStatus === oldStatus) {
           return;
-        }
-
-        // check status
-        if (latestStatus === FLIPKART_ORDER_STATUS.CANCELLED) {
-          cancellationOrders.push({ ...order, flipkart_status: latestStatus });
         }
 
         if (latestStatus === FLIPKART_ORDER_STATUS.RETURNED) {
@@ -57,10 +66,14 @@ export const handleOrderStatusCheck = async () => {
 
       const updatedReturnedOrders = oldReturnOrders.map((order) => {
         const returnDetails = latestReturnedOrdersDetails[order.order_item_id];
-        return {
+        const updateReturnOrder = {
           ...order,
           ...returnDetails,
         };
+        updateReturnOrder.net_profit = returnNetProfitOf(updateReturnOrder, STATUS.CUSTOMER_RETURN);
+        updateReturnOrder.status = STATUS.CUSTOMER_RETURN;
+
+        return updateReturnOrder;
       });
 
       logInfo('data', updatedReturnedOrders, cancellationOrders);

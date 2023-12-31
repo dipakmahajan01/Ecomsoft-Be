@@ -64,3 +64,13 @@ export const convertIntoUnix = (date) => {
   const unixTimestamp = specificDate.unix();
   return unixTimestamp;
 };
+export const convertUnixToDate = (date) => {
+  return dayjs.unix(date).format('YYYY-MM-DD HH:mm:ss');
+};
+export const differenceBetweenTwoDate = (oldDate, todayDate) => {
+  const date1 = dayjs.unix(oldDate);
+  const date2 = dayjs.unix(todayDate);
+  const daysDifference = date2.diff(date1, 'day');
+  // console.log('daysDifference', daysDifference);
+  return daysDifference;
+};

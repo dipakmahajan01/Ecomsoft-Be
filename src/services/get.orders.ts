@@ -49,15 +49,17 @@ export const getOrdersByIds = async ({
     for (let shipmentArray of shipmentArrayBatch) {
       const reqConfig: AxiosRequestConfig = {
         method: 'GET',
-        url: `${FLIPKART.GET_SHIPMENT_V3}??orderItemIds={}=${shipmentArray.toString()}`,
+        url: `${FLIPKART.GET_SHIPMENT_V3}?orderItemIds=${shipmentArray.toString()}`,
         data: null,
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       };
 
-      const { data: shipmentsData = [] } = await axios(reqConfig);
-      const extractedShipment = extractOrdersFromShipment(shipmentsData);
+      const {
+        data: { shipments = [] },
+      } = await axios(reqConfig);
+      const extractedShipment = extractOrdersFromShipment(shipments);
       result = { ...result, ...extractedShipment };
     }
     return result;

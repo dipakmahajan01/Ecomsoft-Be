@@ -2,27 +2,27 @@
 
 import cron from 'node-cron';
 import { handleInsertCancelOrder } from '../../services/cancel.order';
+// import { orderApiDataInsert } from '../flpkart-provider/flipakart-data';
 import { handlerTodaysOrders } from '../../services/get.today.orders';
 import { handleOrderStatusCheck } from '../../services/check.order.status';
+// import { orderApiDataInsert } from '../flpkart-provider/flipakart-data';
 
 // export const orderApiCron = () => {
-//   cron.schedule('*/3 * * * *', async () => {
+//   cron.schedule('* * * * *', async () => {
 //     console.log('---------------', 'order cron job runing-------------------');
 //     await orderApiDataInsert();
 //   });
 // };
-
-export const cancelOrderApiCron = () => {
-  cron.schedule('* * * * *', async () => {
-    console.log('---------------', ' cancel order cron job running-------------------');
-    await handleInsertCancelOrder();
-  });
-};
-
 export const todaysOrders = () => {
   cron.schedule('* * * * *', async () => {
     console.log('---------------', 'today order cron job running-------------------');
     await handlerTodaysOrders();
+  });
+};
+
+export const cancelOrderApiCron = () => {
+  cron.schedule('* * * * *', async () => {
+    await handleInsertCancelOrder();
   });
 };
 

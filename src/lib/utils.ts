@@ -101,7 +101,7 @@ export const logsError = (error: any, data?: any) => {
 };
 
 export const logInfo = (msg: string, ...meta: any) => {
-  logger.info(msg, ...meta);
+  logger.info(msg, { meta });
 };
 
 export function extractJwtToken(authorizationHeader: string) {
