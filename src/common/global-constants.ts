@@ -71,6 +71,7 @@ export const STATUS = {
   COMPLETED: 'COMPLETED',
   COURIER_RETURN: 'COURIER_RETURN',
   CUSTOMER_RETURN: 'CUSTOMER_RETURN',
+  DELIVERED: 'DELIVERED',
   // REPLACEMENT: "REPLACEMENT" // may be base on how we are going to handle it.
 };
 
@@ -81,7 +82,7 @@ export const FLIPKART_PAYMENT_TYPES = {
 };
 
 export const CHECK_STATUS_OF_DAYS = 8;
-export const DAYS_IN_WHICH_ORDER_SHOULD_RETURNED = 10;
+export const RETURN_DEADLINE_IN_DAYS = 10;
 
 // Config for net profit calculation
 

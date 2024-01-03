@@ -97,7 +97,7 @@ export const logsErrorAndUrl = (req: { url: any }, error: any) => {
 export const logsError = (error: any, data?: any) => {
   const errorMessage = typeof error === 'object' ? error.message : error;
   const errorStack = typeof error === 'object' ? error.stack : null;
-  logger.error(`${errorMessage}, time: ${new Date().toISOString()}`, errorStack, data);
+  logger.error(`${errorMessage}, time: ${new Date().toISOString()}`, [errorStack, data]);
 };
 
 export const logInfo = (msg: string, ...meta: any) => {

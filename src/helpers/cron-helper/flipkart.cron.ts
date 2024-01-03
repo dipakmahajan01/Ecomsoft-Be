@@ -1,11 +1,8 @@
-/* eslint-disable no-console */
-
 import cron from 'node-cron';
 import { handleInsertCancelOrder } from '../../services/cancel.order';
-// import { orderApiDataInsert } from '../flpkart-provider/flipakart-data';
 import { handlerTodaysOrders } from '../../services/get.today.orders';
 import { handleOrderStatusCheck } from '../../services/check.order.status';
-// import { orderApiDataInsert } from '../flpkart-provider/flipakart-data';
+import { logInfo } from '../../lib';
 
 // export const orderApiCron = () => {
 //   cron.schedule('* * * * *', async () => {
@@ -15,7 +12,7 @@ import { handleOrderStatusCheck } from '../../services/check.order.status';
 // };
 export const todaysOrders = () => {
   cron.schedule('* * * * *', async () => {
-    console.log('---------------', 'today order cron job running-------------------');
+    logInfo('---------------', 'today order cron job running-------------------');
     await handlerTodaysOrders();
   });
 };
@@ -28,7 +25,7 @@ export const cancelOrderApiCron = () => {
 
 export const serverDayOrdersStatusUpdate = () => {
   cron.schedule('* * * * *', async () => {
-    console.log('---------------', '7 today order status cron job running-------------------');
+    logInfo('---------------', '7 today order status cron job running-------------------');
     await handleOrderStatusCheck();
   });
 };

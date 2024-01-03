@@ -65,7 +65,7 @@ export const getReturnOrders = async ({
     if (!axios.isAxiosError(error)) {
       throw error;
     }
-    const errorCode = error.response.data?.error;
+    const errorCode = error.response?.data?.error;
     if (errorCode === 'unauthorized' || errorCode === 'invalid_token') {
       const ordersData = await getReturnOrders({ apiKey, secret, orderIDs, token: null });
       return { ...result, ...ordersData };
