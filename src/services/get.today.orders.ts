@@ -36,9 +36,10 @@ export const handlerTodaysOrders = async () => {
   let currentDoc = null;
   try {
     const flipkartAccount = await UserCredential.find({
-      user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f', // TODO - Remove this.
+      user_id: '19742010-5961-44b1-8675-43ba35497793', // TODO - Remove this.
       is_deleted: false,
     });
+    // console.log('flipkartAccount', flipkartAccount);
     // const today = formatDateToYYYYMMDD(getToday()); // TODO - Use ISO string. helper function are in global-function use them.
     // const tomorrow = formatDateToYYYYMMDD(getTomorrow());
     const cachedRateCardDocs = new Map();

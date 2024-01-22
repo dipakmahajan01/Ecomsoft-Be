@@ -13,7 +13,7 @@ import authRoutes from './routes/auth';
 import sellerRoute from './routes/sellers';
 import marketPlaceRoutes from './routes/marketplace';
 import rateCardRoutes from './routes/rate_card';
-import { todaysOrders } from './helpers/cron-helper/flipkart.cron';
+// import { todaysOrders } from './helpers/cron-helper/flipkart.cron';
 
 dotenv.config();
 
@@ -212,7 +212,7 @@ process.on('unhandledRejection', function (reason, promise) {
 // Need to check the value bsc env is returning string.
 if (process.env.IS_JOB === 'true') {
   // orderApiCron();
-  todaysOrders();
+  // todaysOrders();
   // cancelOrderApiCron();
   // serverDayOrdersStatusUpdate();
 }
