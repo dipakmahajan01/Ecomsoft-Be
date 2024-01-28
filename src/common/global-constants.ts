@@ -91,3 +91,8 @@ export const ORDER_NET_PROFIT = {
   REFUND: ['commission', 'shippingFee', 'fixedFee', 'collectionFee', 'reverseShippingFee'],
   REPLACEMENT: ['commission', 'shippingFee', 'fixedFee', 'collectionFee', 'reverseShippingFee', 'shippingFee'],
 };
+
+export const ORDER = {
+  NOT_FOUND: 'order not found',
+  FOUND: 'order found successfully',
+};
