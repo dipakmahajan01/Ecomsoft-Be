@@ -13,6 +13,7 @@ import authRoutes from './routes/auth';
 import sellerRoute from './routes/sellers';
 import marketPlaceRoutes from './routes/marketplace';
 import rateCardRoutes from './routes/rate_card';
+import dashboard from './routes/dashboard';
 // import { todaysOrders } from './helpers/cron-helper/flipkart.cron';
 
 dotenv.config();
@@ -185,6 +186,7 @@ app.use('/api/auth/', authRoutes);
 app.use('/api/marketplace', marketPlaceRoutes);
 app.use('/api/rate-card', rateCardRoutes);
 app.use('/api/seller', sellerRoute);
+app.use('/api/dashboard', dashboard);
 app.use((req: Request, res: Response) => {
   return res
     .status(StatusCodes.INTERNAL_SERVER_ERROR)
