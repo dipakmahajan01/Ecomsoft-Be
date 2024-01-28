@@ -4,9 +4,11 @@ import { logsError, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
 import order from '../../model/order.model';
 import { setPagination } from '../../common/common-function';
+import { getOrderHandlerSchema } from '../../helpers/validation/user.validation';
 
 export const getOrderHandler = async (req: Request, res: Response) => {
   try {
+    await getOrderHandlerSchema.validateAsync(req.query);
     const {
       status,
       order_id: orderId,
