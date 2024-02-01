@@ -129,10 +129,17 @@ export const getOrderHandler = async (req: Request, res: Response) => {
         { $sort: pagination.sort },
       );
     }
-    const orderDetailList = await order.aggregate(
-      newSetOrderDetailListArr.length > 0 ? newSetOrderDetailListArr : setOrderDetailListArr,
-    );
-    const orderCount = await order.aggregate(setOrderDetailListArr).count('data');
+    let orderDetailList;
+    if (isAnalytics) {
+      [orderDetailList] = await order.aggregate(
+        newSetOrderDetailListArr.length > 0 ? newSetOrderDetailListArr : setOrderDetailListArr,
+      );
+    } else {
+      orderDetailList = await order.aggregate(
+        newSetOrderDetailListArr.length > 0 ? newSetOrderDetailListArr : setOrderDetailListArr,
+      );
+    }
+    const orderCount = await order.aggregate(setOrderDetailListArr).count('data').exec();
     const dataCount = orderCount.length > 0 ? orderCount[0].data : 0;
     const data = {
       dataCount,
