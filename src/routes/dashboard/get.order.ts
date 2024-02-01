@@ -56,7 +56,7 @@ export const getOrderHandler = async (req: Request, res: Response) => {
       orderAnalyticsArr.push({
         $group: {
           _id: 'null',
-          'net profit': { $sum: '$totalOrderRate' },
+          net_profit: { $sum: '$totalOrderRate' },
           total_order: { $sum: 1 },
           Customer_return: {
             $sum: {
