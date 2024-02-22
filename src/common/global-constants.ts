@@ -36,10 +36,10 @@ export const RATE_CARD = {
 export const ERROR = {
   INTERNAL_SERVER_ERROR: 'something went wrong',
   ERROR_MESSAGE: 'user token expired',
+  FLIPKART_TOKEN: 'flipkart token is not created',
 };
 export const FLIPKART = {
-  GENERATE_TOKEN_API:
-    'https://api.flipkart.net/oauth-service/oauth/token?grant_type=client_credentials&scope=Seller_Api',
+  GENERATE_TOKEN_API: `https://api.flipkart.net/oauth-service/oauth/token?redirect_uri=https%3A%2F%2Faumsoft.vercel.app%2F&grant_type=authorization_code&state=fb-seller&code=`,
   ORDER_API: 'https://api.flipkart.net/sellers/v3/shipments/filter/',
   RETURN_ORDER_API: 'https://api.flipkart.net/sellers/v2/returns',
   FLIPKART_BASE_URL: 'https://api.flipkart.net',

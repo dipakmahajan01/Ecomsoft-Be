@@ -8,6 +8,10 @@ export interface IUserCredentialModel {
   api_key: string;
   secret: string;
   auth_token: string;
+  security_code: string;
+  access_token: string;
+  refresh_token: string;
+  expired_at: string;
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
@@ -24,7 +28,11 @@ const userCredentialSchema = new Schema({
   api_key: { type: String },
   secret: { type: String },
   auth_token: { type: String },
+  access_token: { type: String },
+  refresh_token: { type: String },
+  expired_at: { type: String },
   account_name: { type: String },
+  security_code: { type: String },
   is_deleted: { type: Boolean, default: false },
   created_at: { type: String },
   updated_at: { type: String },
