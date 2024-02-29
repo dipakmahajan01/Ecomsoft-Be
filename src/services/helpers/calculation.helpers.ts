@@ -10,7 +10,7 @@ const returnPercentageOf = (val: number, percentage: number) => {
 
 const sortShipmentsFeesDes = (shipmentsTable) => {
   const table = structuredClone(shipmentsTable);
-  return table.sort((row: any, nextRow: any) => nextRow.min_weight - row.min_weight);
+  return table.sort((row: any, nextRow: any) => (nextRow?.min_weight ?? 0) - (row?.min_weight ?? 0));
 };
 
 export const calculateCommission = (customerPrice: number, commissionTable: any) => {

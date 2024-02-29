@@ -30,7 +30,7 @@ const getBodyData = ({ from, to }: { from: string; to: string }) => {
 export const handleInsertCancelOrder = async () => {
   try {
     const flipkartAccount = await UserCredential.find({
-      user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f', // TODO - Remove this.
+      user_id: '0b0a540e-5779-4352-bdca-6d64fec4f6b7', // TODO - Remove this.
       is_deleted: false,
     });
     // const today = formatDateToYYYYMMDD(getToday()); // TODO - Use ISO string. helper function are in global-function use them.
@@ -45,10 +45,8 @@ export const handleInsertCancelOrder = async () => {
           headers: {},
         };
         const { orderList: shipmentsData } = await getOrders({
-          apiKey: account.api_key,
-          secret: account.secret,
           axiosConfig,
-          token: account.auth_token,
+          token: account.access_token,
         });
 
         const orderData = extractOrders(shipmentsData);

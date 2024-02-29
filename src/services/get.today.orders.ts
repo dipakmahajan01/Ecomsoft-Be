@@ -36,7 +36,7 @@ export const handlerTodaysOrders = async () => {
   let currentDoc = null;
   try {
     const flipkartAccount = await UserCredential.find({
-      user_id: '19742010-5961-44b1-8675-43ba35497793', // TODO - Remove this.
+      user_id: '0b0a540e-5779-4352-bdca-6d64fec4f6b7', // TODO - Remove this.
       is_deleted: false,
     });
     // console.log('flipkartAccount', flipkartAccount);
@@ -51,11 +51,9 @@ export const handlerTodaysOrders = async () => {
         data: getBodyData({ from: '2023-09-01', to: '2023-12-30' }),
         headers: {},
       };
-      const { orderList: shipmentsData, accessToken } = await getOrders({
-        apiKey: account.api_key,
-        secret: account.secret,
+      const { orderList: shipmentsData } = await getOrders({
         axiosConfig,
-        token: account.auth_token,
+        token: account.access_token,
       });
       // console.log('shipmentsDataIds', shipmentsData.map((order) => order.order_item_id))
       // console.log('shipmentsData', shipmentsData.length)
@@ -65,9 +63,7 @@ export const handlerTodaysOrders = async () => {
       // console.log('orderIds', orderIds)
       const orderShipmentType = await getShipmentsType({
         orderIDs: orderIds,
-        apiKey: account.api_key,
-        secret: account.secret,
-        token: accessToken,
+        token: account.access_token,
       });
       // Merge order and shipment type data
       orderData = orderData.map((order) => {

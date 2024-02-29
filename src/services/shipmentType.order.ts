@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 import axios, { AxiosRequestConfig } from 'axios';
 import { FLIPKART } from '../common/global-constants';
-import { generateToken, returnShipmentType, sliceIntoBatches } from './helpers';
+import { returnShipmentType, sliceIntoBatches } from './helpers';
 import { logsError } from '../lib';
 
-const FLIPKART_MAX_SHIPMENT_GET_LIMIT = 100;
+const FLIPKART_MAX_SHIPMENT_GET_LIMIT = 25;
 
 const extractAddressFromShipment = (data) => {
   const res = {};
@@ -47,23 +47,13 @@ const extractAddressFromShipment = (data) => {
 export const getShipmentsType = async ({
   orderIDs,
   token,
-  apiKey,
-  secret,
 }: {
   orderIDs: string[];
   token: string;
-  apiKey: string;
-  secret: string;
 }): Promise<{ [orderId: string]: any }> => {
   let result = {};
   try {
     let accessToken = token;
-
-    if (!accessToken) {
-      accessToken = await generateToken(apiKey, secret);
-      if (!accessToken) return result;
-    }
-
     const shipmentArrayBatch = sliceIntoBatches(orderIDs, FLIPKART_MAX_SHIPMENT_GET_LIMIT);
 
     for (let shipmentArray of shipmentArrayBatch) {
@@ -88,7 +78,7 @@ export const getShipmentsType = async ({
     }
     const errorCode = error.response.data?.error;
     if (errorCode === 'unauthorized' || errorCode === 'invalid_token') {
-      const shipmentData = await getShipmentsType({ apiKey, secret, orderIDs, token: null });
+      const shipmentData = await getShipmentsType({ orderIDs, token: null });
       return { ...result, ...shipmentData };
     }
     throw error;

@@ -10,7 +10,7 @@ import { logInfo, logsError } from '../lib';
 export const generateToken = async () => {
   try {
     const flipkartAccount = await UserCredential.findOne({
-      user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f',
+      user_id: '0b0a540e-5779-4352-bdca-6d64fec4f6b7',
     });
     let base64Credentials = btoa(`${flipkartAccount.api_key}:${flipkartAccount.secret}`);
 

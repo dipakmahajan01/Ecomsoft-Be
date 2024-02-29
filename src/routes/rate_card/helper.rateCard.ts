@@ -208,7 +208,7 @@ export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any
   }
 }
 
-// async function returnTheRateCardData(fnsCode, wait = false) {
+// async function returnTheRateCardData(fnsCode) {
 //   function deepMerge(...objs) {
 //     function getType(obj) {
 //       return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
@@ -217,6 +217,7 @@ export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any
 //       for (let [key, value] of Object.entries(obj)) {
 //         let type = getType(value);
 //         if (clone[key] !== undefined && getType(clone[key]) === type && ['array', 'object'].includes(type)) {
+//           // eslint-disable-next-line no-param-reassign
 //           clone[key] = deepMerge(clone[key], value);
 //         } else {
 //           clone[key] = structuredClone(value);
@@ -231,49 +232,54 @@ export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any
 //         continue;
 //       }
 
-//       if (type === 'array') {
-//         clone = [...clone, ...structuredClone(obj)];
-//       } else if (type === 'object') {
-//         mergeObj(clone, obj);
-//       } else {
-//         clone = obj;
-//       }
-//     }
-
-//     return clone;
+//   if (type === 'array') {
+//     clone = [...clone, ...structuredClone(obj)];
+//   } else if (type === 'object') {
+//     mergeObj(clone, obj);
+//   } else {
+//     clone = obj;
 //   }
+// }
 
-//   function getFormattedDate() {
-//     const today = new Date();
-//     const year = today.getFullYear();
-//     const month = String(today.getMonth() + 1).padStart(2, '0');
-//     const day = String(today.getDate()).padStart(2, '0');
-//     return `${year}-${month}-${day}`;
-//   }
+//   return clone;
+// }
 
-//   const returnUrl = (fsnCode, FType, badge, isShipping = false) => {
-//     return `https://seller.flipkart.com/napi/rate-card/fetchRateCardFees?service_profile=${FType}&date=${getFormattedDate()}&fsn=${fsnCode}&partner_context=flipkart&is_seller_dashboard=true&darwin_tier=${badge}&shipping=${isShipping}&sellerId=bbce0103039547c2`;
-//   };
+// function getFormattedDate() {
+//   const today = new Date();
+//   const year = today.getFullYear();
+//   const month = String(today.getMonth() + 1).padStart(2, '0');
+//   const day = String(today.getDate()).padStart(2, '0');
+//   return `${year}-${month}-${day}`;
+// }
 
-//   const badge = ['wood', 'bronze', 'silver', 'gold', 'platinum'];
-//   const fulfillmentTypes = ['NON_FBF', 'FBF'];
+// const returnUrl = (fsnCode, FType, badge, isShipping = false) => {
+//   return `https://seller.flipkart.com/napi/rate-card/fetchRateCardFees?service_profile=${FType}&date=${getFormattedDate()}&fsn=${fsnCode}&partner_context=flipkart&is_seller_dashboard=true&darwin_tier=${badge}&shipping=${isShipping}&sellerId=bbce0103039547c2`;
+// };
 
-//   const data = { NON_FBF: {}, FBF: [] };
+// const badge = ['wood', 'bronze', 'silver', 'gold', 'platinum'];
+// const fulfillmentTypes = ['NON_FBF', 'FBF'];
 
-//   let w = wait;
+// const data = { NON_FBF: {}, FBF: [] };
+
 //   for (let fulfillmentType of fulfillmentTypes) {
-//     if (w) {
-//       await new Promise((resolve) => {
-//         setTimeout(() => {
-//           resolve();
-//         }, 60000);
-//       });
-//       w = false;
-//     }
 //     for (let [index, bdg] of Object.entries(badge)) {
-//       const rateCardData = await fetch(returnUrl(fnsCode, fulfillmentType, bdg, index != 0)).then((res) => res.json());
-//       console.log(rateCardData, index != 0);
-//       if (index == 0) {
+//       let rateCardData;
+//       const response = await fetch(returnUrl(fnsCode, fulfillmentType, bdg, index !== '0'));
+//       if (!response.ok) {
+//         await new Promise((resolve) => {
+//           setTimeout(async () => {
+//              rateCardData = await fetch(returnUrl(fnsCode, fulfillmentType, bdg, index !== '0')).then((res) =>
+//               res.json()
+//             );
+//             resolve(true)
+//           }, 15000);
+//         });
+//       }else {
+//         rateCardData = await response.json();
+//       }
+
+//       console.log(rateCardData, index !== '0');
+//       if (index === '0') {
 //         data[fulfillmentType] = rateCardData;
 //       } else {
 //         data[fulfillmentType].shippingFee.response[bdg] = rateCardData.shippingFee.response[bdg];
@@ -286,16 +292,17 @@ export function mergeObjects(obj1: Record<string, any>, obj2: Record<string, any
 //   console.log(result);
 //   return result;
 // }
-
+// const output = [];
 // async function scriptGetRateCardData(fnsCodeList, output) {
-//   let wait = false;
 //   for (let fsnCode of fnsCodeList) {
 //     try {
-//       const rateCardData = await returnTheRateCardData(fsnCode, wait);
-//       wait = true;
+//       const rateCardData = await returnTheRateCardData(fsnCode);
 //       output.push(rateCardData);
+//       console.log('Current FSN...', fsnCode);
 //     } catch (error) {
 //       console.log('Error while processing ', fsnCode, error);
 //     }
 //   }
+//   return output;
 // }
+// scriptGetRateCardData(['KLCGN28DWPK59UZE', 'KLCGKWFYWFHEDFRZ'], output).then((res) => console.log(res));

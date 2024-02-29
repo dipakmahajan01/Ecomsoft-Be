@@ -95,4 +95,5 @@ export const ORDER_NET_PROFIT = {
 export const ORDER = {
   NOT_FOUND: 'order not found',
   FOUND: 'order found successfully',
+  CREATED: 'order successfully inserted',
 };

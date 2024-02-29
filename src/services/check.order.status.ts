@@ -12,7 +12,7 @@ export const handleOrderStatusCheck = async () => {
   let currentDoc = null;
   try {
     const flipkartAccount = await UserCredential.find({
-      user_id: '75336827-f95e-4fb5-b4a9-ea7d9b6e957f', // TODO - Remove this.
+      user_id: '0b0a540e-5779-4352-bdca-6d64fec4f6b7', // TODO - Remove this.
       is_deleted: false,
     });
 
@@ -64,9 +64,7 @@ export const handleOrderStatusCheck = async () => {
       // Get the returns reason. and handle calculation..
       const latestReturnedOrdersDetails = await getReturnOrders({
         orderIDs: OldReturnOrdersIds,
-        token: account.auth_token,
-        apiKey: account.api_key,
-        secret: account.secret,
+        token: account.access_token,
       });
 
       const updatedReturnedOrders = oldReturnOrders.map((order) => {

@@ -5,7 +5,7 @@ import RateCard from '../../model/rateCard.model';
 
 export const getRateCardIds = async (req: Request, res: Response) => {
   try {
-    const rateCardIds = await RateCard.find({ needs_to_add: true }).select('fsn_code').limit(3000);
+    const rateCardIds = await RateCard.find({ needs_to_add: true }).select('fsn_code');
     if (!rateCardIds) {
       return res.status(StatusCodes.NOT_FOUND).send(responseGenerators({}, StatusCodes.NOT_FOUND, 'No found', true));
     }

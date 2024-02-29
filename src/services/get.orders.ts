@@ -1,13 +1,7 @@
 /* eslint-disable no-console */
 import axios, { AxiosRequestConfig } from 'axios';
 import { FLIPKART } from '../common/global-constants';
-import {
-  extractOrderData,
-  extractOrderItemsFromShipment,
-  extractOrderWeightInfo,
-  generateToken,
-  sliceIntoBatches,
-} from './helpers';
+import { extractOrderData, extractOrderItemsFromShipment, extractOrderWeightInfo, sliceIntoBatches } from './helpers';
 import { logsError } from '../lib';
 
 const FLIPKART_MAX_SHIPMENT_GET_LIMIT = 100;
@@ -38,12 +32,6 @@ export const getOrdersByIds = async ({
   let result = [];
   try {
     let accessToken = token;
-
-    if (!accessToken) {
-      accessToken = await generateToken(apiKey, secret);
-      if (!accessToken) return result;
-    }
-
     const shipmentArrayBatch = sliceIntoBatches(orderIDs, FLIPKART_MAX_SHIPMENT_GET_LIMIT);
 
     for (let shipmentArray of shipmentArrayBatch) {
@@ -78,13 +66,9 @@ export const getOrdersByIds = async ({
 };
 
 export const getOrders = async ({
-  apiKey,
-  secret,
   axiosConfig,
   token,
 }: {
-  apiKey: string;
-  secret: string;
   axiosConfig: AxiosRequestConfig;
   token: string;
 }): Promise<{ orderList: any[]; accessToken: string }> => {
@@ -92,11 +76,7 @@ export const getOrders = async ({
   let accessToken = token;
   let reqConfig = { ...axiosConfig };
   try {
-    if (!accessToken) {
-      accessToken = await generateToken(apiKey, secret);
-      if (!accessToken) return { orderList, accessToken };
-    }
-    reqConfig.headers.Authorization = `Bearer ${accessToken}`;
+    reqConfig.headers.Authorization = `Bearer ${token}`;
 
     const { data } = await axios(reqConfig);
     const { hasMore, nextPageUrl, shipments } = data;
@@ -113,7 +93,7 @@ export const getOrders = async ({
       url: `${FLIPKART.FLIPKART_BASE_URL}/sellers${nextPageUrl}`,
       data: null,
     };
-    const pendingOrder = await getOrders({ apiKey, secret, axiosConfig: reqConfig, token: accessToken });
+    const pendingOrder = await getOrders({ axiosConfig: reqConfig, token });
     return { orderList: [...orderList, ...pendingOrder.orderList], accessToken: pendingOrder.accessToken };
   } catch (error: any) {
     logsError(error, error?.response?.data);
@@ -123,7 +103,7 @@ export const getOrders = async ({
     const errorCode = error.response.data?.error;
     if (errorCode === 'unauthorized' || errorCode === 'invalid_token') {
       delete reqConfig.headers.Authorization;
-      const pendingOrder = await getOrders({ apiKey, secret, axiosConfig, token: accessToken });
+      const pendingOrder = await getOrders({ axiosConfig, token });
       return { orderList: [...orderList, ...pendingOrder.orderList], accessToken: pendingOrder.accessToken };
     }
     throw error;

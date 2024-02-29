@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import axios, { AxiosRequestConfig } from 'axios';
 import { FLIPKART } from '../common/global-constants';
-import { generateToken, sliceIntoBatches } from './helpers';
+import { sliceIntoBatches } from './helpers';
 import { logsError } from '../lib';
 
 const FLIPKART_MAX_ORDER_GET_LIMIT = 25;
@@ -23,26 +23,10 @@ const extractReturnOrders = (data) => {
   return res;
 };
 
-export const getReturnOrders = async ({
-  orderIDs,
-  token,
-  apiKey,
-  secret,
-}: {
-  orderIDs: string[];
-  token: string;
-  apiKey: string;
-  secret: string;
-}) => {
+export const getReturnOrders = async ({ orderIDs, token }: { orderIDs: string[]; token: string }) => {
   let result = {};
   try {
     let accessToken = token;
-
-    if (!accessToken) {
-      accessToken = await generateToken(apiKey, secret);
-      if (!accessToken) return result;
-    }
-
     const orderArrayBatch = sliceIntoBatches(orderIDs, FLIPKART_MAX_ORDER_GET_LIMIT);
 
     for (let ordersArray of orderArrayBatch) {
@@ -67,7 +51,7 @@ export const getReturnOrders = async ({
     }
     const errorCode = error.response?.data?.error;
     if (errorCode === 'unauthorized' || errorCode === 'invalid_token') {
-      const ordersData = await getReturnOrders({ apiKey, secret, orderIDs, token: null });
+      const ordersData = await getReturnOrders({ orderIDs, token: null });
       return { ...result, ...ordersData };
     }
     throw error;

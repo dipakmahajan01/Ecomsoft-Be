@@ -1,45 +1,45 @@
-import axios from 'axios';
+// import axios from 'axios';
 import { EShipmentType, EShipmentZones } from '../common.types';
-import { FLIPKART } from '../../common/global-constants';
+// import { FLIPKART } from '../../common/global-constants';
 import RateCard from '../../model/rateCard.model';
 import { generatePublicId, setTimesTamp } from '../../common/common-function';
-import { logsError } from '../../lib';
-import UserCredential from '../../model/user_credential.model';
+// import { logsError } from '../../lib';
+// import UserCredential from '../../model/user_credential.model';
 
-export const generateToken = async (apiKey: string, secret: string) => {
-  try {
-    let base64Credentials = btoa(`${apiKey}:${secret}`);
-    const config = {
-      method: 'get', // Change the HTTP method as needed (e.g., 'post', 'put', 'delete', etc.)
-      url: FLIPKART.GENERATE_TOKEN_API,
-      headers: {
-        Authorization: `Basic ${base64Credentials}`,
-        'Content-Type': 'application/json', // Adjust the content type if necessary
-      },
-    };
-    const { data } = await axios(config);
-    if (!data && !data.data.access_token) {
-      throw new Error(`Token not found in response for apiKet:- ${apiKey} secret:- ${secret}`);
-    }
+// export const generateToken = async (apiKey: string, secret: string) => {
+//   try {
+//     let base64Credentials = btoa(`${apiKey}:${secret}`);
+//     const config = {
+//       method: 'get', // Change the HTTP method as needed (e.g., 'post', 'put', 'delete', etc.)
+//       url: FLIPKART.GENERATE_TOKEN_API,
+//       headers: {
+//         Authorization: `Basic ${base64Credentials}`,
+//         'Content-Type': 'application/json', // Adjust the content type if necessary
+//       },
+//     };
+//     const { data } = await axios(config);
+//     if (!data && !data.data.access_token) {
+//       throw new Error(`Token not found in response for apiKet:- ${apiKey} secret:- ${secret}`);
+//     }
 
-    // Store auth token in user credentials.
-    await UserCredential.findOneAndUpdate({ api_key: apiKey, secret }, { auth_token: data.access_token });
+//     // Store auth token in user credentials.
+//     await UserCredential.findOneAndUpdate({ api_key: apiKey, secret }, { auth_token: data.access_token });
 
-    return data.access_token;
-  } catch (error: any) {
-    logsError(error, error.response?.data);
-    if (!axios.isAxiosError(error)) {
-      throw new Error(`Something went wrong... Please check. Message:- ${error.message}  errorCode: ${error.name}`);
-    }
+//     return data.access_token;
+//   } catch (error: any) {
+//     logsError(error, error.response?.data);
+//     if (!axios.isAxiosError(error)) {
+//       throw new Error(`Something went wrong... Please check. Message:- ${error.message}  errorCode: ${error.name}`);
+//     }
 
-    const { error: errorCode, error_description: errorDescription } = error.response?.data ?? {};
-    throw new Error(
-      `Something is off in API or seller Credentials... Please check. Message:- ${
-        errorDescription ?? error.message
-      }  errorCode: ${errorCode ?? error.name}`,
-    );
-  }
-};
+//     const { error: errorCode, error_description: errorDescription } = error.response?.data ?? {};
+//     throw new Error(
+//       `Something is off in API or seller Credentials... Please check. Message:- ${
+//         errorDescription ?? error.message
+//       }  errorCode: ${errorCode ?? error.name}`,
+//     );
+//   }
+// };
 
 export const fetchAndCacheIfNeeded = async (cache: any, fsnCode: string) => {
   if (!cache.has(fsnCode)) {

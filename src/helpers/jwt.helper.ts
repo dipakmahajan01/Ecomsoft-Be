@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-import { ITokenData } from '../common/global-constants';
 import { sign, verify } from 'jsonwebtoken';
+import { ITokenData } from '../common/global-constants';
 
 dotenv.config();
 
@@ -11,7 +11,7 @@ const refreshJwtOption = {
   expiresIn: process.env.REFRESH_EXPIRED_IN || '1y',
 };
 export const createJwtToken = (data: ITokenData) => {
-  return sign(data, process.env.SECRET_KEY!, jwtOption);
+  return sign(data, process.env.SECRET_KEY, jwtOption);
 };
 export function getJwt(data: ITokenData) {
   return sign(data, process.env.SECRET_KEY, jwtOption);
