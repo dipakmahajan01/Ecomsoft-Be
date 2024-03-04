@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createRateCardData } from './post.ratecard';
+import { createRateCardData } from './post.rateCard';
 import { getRateCardIds } from './get.rateCardIds';
 
 const rateCardRoutes = Router();
