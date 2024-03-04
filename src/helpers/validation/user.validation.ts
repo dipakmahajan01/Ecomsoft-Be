@@ -22,4 +22,6 @@ export const getOrderHandlerSchema = Joi.object({
   flipkart_status: Joi.string().optional(),
   start_date: Joi.string().optional(),
   end_date: Joi.string().optional(),
+  flipkart_by: Joi.string().optional(),
+  offset: Joi.string().optional(),
 });
