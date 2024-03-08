@@ -13,6 +13,8 @@ export const getMarketplaceCred = async (req: Request, res: Response) => {
       .status(StatusCodes.OK)
       .send(responseGenerators(credentialDetails, StatusCodes.OK, CREDENTIALS.SUCCESS, false));
   } catch (error) {
+    // eslint-disable-next-line no-console
+    console.log(error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, true));
