@@ -60,44 +60,53 @@ export const getSheetOrderHandler = async (req: Request, res: Response) => {
       };
     }
     let orderAnalyticsArr = [];
-    if (isAnalytics) {
-      orderAnalyticsArr.push({});
+    let setOrderDetailListArr;
+    if (isAnalytics === 'true') {
+      setOrderDetailListArr = [
+        {
+          $match: {
+            ...where,
+          },
+        },
+        {
+          $addFields: {
+            profit: {
+              $sum: [
+                '$marketplace_fee_rs_sum_v_ai',
+                '$sale_amount_rs',
+                '$refund_rs',
+                '$customer_add_ons_amount_rs',
+                '$total_offer_amount_invoice',
+                '$offer_adjustments_rs',
+                '$taxes_rs',
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            order_id: { $first: '$order_id' },
+            net_profit: {
+              $sum: '$profit',
+            },
+            total_order: { $sum: 1 },
+            profit: { $first: '$profit' },
+          },
+        },
+      ];
+      orderAnalyticsArr.push(...setOrderDetailListArr);
+
+      const orderAnalytics = await SheetOrder.aggregate(orderAnalyticsArr);
+      return res.status(StatusCodes.OK).send(responseGenerators(orderAnalytics, StatusCodes.OK, ORDER.FOUND, false));
     }
-    const setOrderDetailListArr: any = [
+    setOrderDetailListArr = [
       {
-        $match: {
-          ...where,
-        },
-      },
-      {
-        $addFields: {
-          profit: {
-            $sum: [
-              '$marketplace_fee_rs_sum_v_ai',
-              '$sale_amount_rs',
-              '$refund_rs',
-              '$customer_add_ons_amount_rs',
-              '$total_offer_amount_invoice',
-              '$offer_adjustments_rs',
-              '$taxes_rs',
-            ],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          order_id: { $first: '$order_id' },
-          net_profit: {
-            $sum: '$profit',
-          },
-          total_order: { $sum: 1 },
-          profit: { $first: '$profit' },
-        },
+        $match: { ...where },
       },
     ];
-    let newSetOrderDetailListArr = [];
     const pagination = await setPagination(req.query);
+    const newSetOrderDetailListArr = [];
     if (limit) {
       newSetOrderDetailListArr.push(
         ...setOrderDetailListArr,
@@ -108,13 +117,6 @@ export const getSheetOrderHandler = async (req: Request, res: Response) => {
     let orderDetailList = await SheetOrder.aggregate(
       newSetOrderDetailListArr.length > 0 ? newSetOrderDetailListArr : setOrderDetailListArr,
     );
-    // if (isAnalytics) {
-    //   [orderDetailList] =
-    // } else {
-    //   orderDetailList = await SheetOrder.aggregate(
-    //     newSetOrderDetailListArr.length > 0 ? newSetOrderDetailListArr : setOrderDetailListArr,
-    //   );
-    // }
     const orderCount = await SheetOrder.aggregate(setOrderDetailListArr).count('data').exec();
     const dataCount = orderCount.length > 0 ? orderCount[0].data : 0;
     const data = {
