@@ -13,7 +13,9 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
   try {
     const { user_id: userId } = getUserData(req);
     const fileLocation: any = req.file.buffer;
-    const { account_name: accountName } = req.body;
+    const { account_name: accountName, sheet_start_date: sheetStartDate, sheet_end_date: sheetEndDate } = req.body;
+    const startDate = convertIntoUnix(sheetStartDate);
+    const endDate = convertIntoUnix(sheetEndDate);
     const file = XLSX.read(fileLocation);
     // console.log('file :>> ', file);
     const sheetNameList = file.SheetNames;
@@ -33,6 +35,12 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         const startYear = date.year();
         const paymentDurationStartDate = convertIntoUnix(startDateString);
         const paymentDurationEndDate = convertIntoUnix(endDateString);
+
+        if (paymentDurationStartDate !== startDate && paymentDurationEndDate !== endDate) {
+          return res
+            .status(StatusCodes.BAD_REQUEST)
+            .send(responseGenerators({}, StatusCodes.BAD_REQUEST, 'please select valid Sheet Date', true));
+        }
         const sheetProfitLoss = await ProfitLoss.findOne({ month: startMonth, year: startYear });
         if (sheetProfitLoss) {
           return res
@@ -69,6 +77,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
           payment_start_date: paymentDurationStartDate.toString(),
           payment_end_date: paymentDurationEndDate.toString(),
           created_at: setTimesTamp().toString(),
+          flipkart_by: flipkartAccount.platform_id,
         };
         let isTexes = false;
         for (const order of orders) {
@@ -162,7 +171,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
               neft_id: order.neft_id,
               neft_type: order.neft_type,
               payment_date: convertIntoUnix(order.payment_date).toString(),
-              bank_settlement_value_rs_sum_j_r: order.bank_settlement_value__rs_______sum_j_r_,
+              bank_settlement_value_rs_sum: order.bank_settlement_value__rs_______sum_j_r_,
               input_gst_tcs_credits_rs_gst_tcs: order.input_gst___tcs_credits__rs_____gst_tcs_,
               income_tax_credits_rs_tds: order.income_tax_credits__rs_____tds_,
               flipkart_order_id: order.order_id,
@@ -215,7 +224,14 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
               quantity: order.quantity,
               product_sub_category: order.product_sub_category,
               additional_information: order.additional_information,
-              return_type: order.return_type,
+
+              return_type:
+                // eslint-disable-next-line no-nested-ternary
+                order.additional_information === 'REPLACEMENT_ITEM'
+                  ? 'replacement'
+                  : order.return_type === 'NA'
+                  ? 'completed'
+                  : order.return_type,
               shopsy_order: order.shopsy_order,
               item_return_status: order.item_return_status,
               invoice_id: order.invoice_id,

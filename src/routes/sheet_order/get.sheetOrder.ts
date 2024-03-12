@@ -5,6 +5,7 @@ import { logsError, responseGenerators } from '../../lib';
 import SheetOrder from '../../model/sheet_order.model';
 import { getOrderHandlerSchema } from '../../helpers/validation/user.validation';
 import { setPagination } from '../../common/common-function';
+import ProfitLoss from '../../model/profit_loss.model';
 
 export const getSheetOrderHandler = async (req: Request, res: Response) => {
   try {
@@ -64,40 +65,100 @@ export const getSheetOrderHandler = async (req: Request, res: Response) => {
     if (isAnalytics === 'true') {
       setOrderDetailListArr = [
         {
-          $match: {
-            ...where,
-          },
-        },
-        {
-          $addFields: {
-            profit: {
-              $sum: [
-                '$marketplace_fee_rs_sum_v_ai',
-                '$sale_amount_rs',
-                '$refund_rs',
-                '$customer_add_ons_amount_rs',
-                '$total_offer_amount_invoice',
-                '$offer_adjustments_rs',
-                '$taxes_rs',
-              ],
-            },
-          },
-        },
-        {
           $group: {
-            _id: null,
-            order_id: { $first: '$order_id' },
-            net_profit: {
-              $sum: '$profit',
-            },
+            _id: 'null',
             total_order: { $sum: 1 },
-            profit: { $first: '$profit' },
+            Customer_return: {
+              $sum: {
+                $cond: {
+                  if: { $eq: ['$return_type', 'customer_return'] },
+                  then: 1, // If status is "CUSTOMER_RETURN", set the sum to 0
+                  else: 0,
+                },
+              },
+            },
+            Courier_return: {
+              $sum: {
+                $cond: {
+                  if: { $eq: ['$return_type', 'courier_return'] },
+                  then: 1, // If status is "CUSTOMER_RETURN", set the sum to 0
+                  else: 0,
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
           },
         },
       ];
       orderAnalyticsArr.push(...setOrderDetailListArr);
 
       const orderAnalytics = await SheetOrder.aggregate(orderAnalyticsArr);
+      const [profitLoss] = await ProfitLoss.aggregate([
+        {
+          $match: {
+            ...where,
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalSalesAmount: { $sum: '$order.sales_amount' },
+            totalReturnsReversal: { $sum: '$order.returns_reversal' },
+            totalOfferAmount: { $sum: '$order.offer_amount' },
+            totalCustomerAddOnsAmount: { $sum: '$order.customer_add_ons_amount' },
+            totalMarketplaceFees: { $sum: '$order.marketplace_fees' },
+            totalOfferAdjustments: { $sum: '$order.offer_adjustments' },
+            totalTaxesOrder: { $sum: '$order.taxes_order' },
+            totalMPFeeRebate: { $sum: '$mp_fee_rebate' },
+            totalOrderSPF: { $sum: '$protection_fund.order_spf' },
+            totalNonOrderSPF: { $sum: '$protection_fund.non_order_spf' },
+            totalStorageFees: { $sum: '$services_fees.storage_fees' },
+            totalRecallFees: { $sum: '$services_fees.recall_fees' },
+            totalAdsFees: { $sum: '$services_fees.ads_fees' },
+            totalValueAddedServices: { $sum: '$services_fees.value_added_services' },
+            totalTaxesServices: { $sum: '$services_fees.taxes_services' },
+            totalTCSRecovery: { $sum: '$tax_settlement.tcs_recovery' },
+            totalTDSClaims: { $sum: '$tax_settlement.tds_claims' },
+            // Add more fields if you want to sum them
+          },
+        },
+        {
+          $addFields: {
+            profit_loss: {
+              $add: [
+                '$totalSalesAmount',
+                '$totalReturnsReversal',
+                '$totalOfferAmount',
+                '$totalCustomerAddOnsAmount',
+                '$totalMarketplaceFees',
+                '$totalOfferAdjustments',
+                '$totalTaxesOrder',
+                '$totalMPFeeRebate',
+                '$totalOrderSPF',
+                '$totalNonOrderSPF',
+                '$totalStorageFees',
+                '$totalRecallFees',
+                '$totalAdsFees',
+                '$totalValueAddedServices',
+                '$totalTaxesServices',
+                '$totalTCSRecovery',
+                '$totalTDSClaims',
+              ],
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            profit_loss: 1,
+          },
+        },
+      ]);
+      orderAnalytics[0].profit_loss = profitLoss.profit_loss;
       return res.status(StatusCodes.OK).send(responseGenerators(orderAnalytics, StatusCodes.OK, ORDER.FOUND, false));
     }
     setOrderDetailListArr = [

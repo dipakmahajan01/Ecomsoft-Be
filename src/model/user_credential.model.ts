@@ -41,6 +41,6 @@ const userCredentialSchema = new Schema({
   updated_by: { type: String },
   deleted_by: { type: String },
 });
-const UserCredential = mongoose.model<IUserCredentialModel>('UserCredential', userCredentialSchema);
+const UserCredential = mongoose.model<IUserCredentialModel>('user_credential', userCredentialSchema);
 
 export default UserCredential;

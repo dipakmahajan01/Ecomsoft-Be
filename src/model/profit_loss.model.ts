@@ -38,6 +38,7 @@ export interface IProfitLossModel {
   payment_start_date: string;
   payment_end_date: string;
   created_at: string;
+  flipkart_by: string;
 }
 
 const profitLossSchema = new Schema({
@@ -54,6 +55,7 @@ const profitLossSchema = new Schema({
   payment_start_date: { type: String },
   payment_end_date: { type: String },
   created_at: { type: String },
+  flipkart_by: { type: String },
 });
 const ProfitLoss = mongoose.model<IProfitLossModel>('profit_loss', profitLossSchema);
 
