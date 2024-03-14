@@ -14,8 +14,6 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     const { user_id: userId } = getUserData(req);
     const fileLocation: any = req.file.buffer;
     const { account_name: accountName, sheet_start_date: sheetStartDate, sheet_end_date: sheetEndDate } = req.body;
-    const startDate = convertIntoUnix(sheetStartDate);
-    const endDate = convertIntoUnix(sheetEndDate);
     const file = XLSX.read(fileLocation);
     // console.log('file :>> ', file);
     const sheetNameList = file.SheetNames;
@@ -29,14 +27,16 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       if (sheetName === 'Summary of report') {
         let sheetsDate = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 0, range: 2 });
         let paymentDurationDate: any = sheetsDate[0];
-        const [startDateString, endDateString] = paymentDurationDate.__EMPTY_2.split(' - ');
+        const [startDateString, endDateString] = paymentDurationDate.__EMPTY_1
+          ? paymentDurationDate.__EMPTY_1.split(' - ')
+          : paymentDurationDate.__EMPTY_2.split(' - ');
         const date = dayjs(startDateString);
         const startMonth = date.month() + 1;
         const startYear = date.year();
-        const paymentDurationStartDate = convertIntoUnix(startDateString);
-        const paymentDurationEndDate = convertIntoUnix(endDateString);
+        const paymentDurationStartDate = convertIntoUnix(startDateString).toString();
+        const paymentDurationEndDate = convertIntoUnix(endDateString).toString();
 
-        if (paymentDurationStartDate !== startDate && paymentDurationEndDate !== endDate) {
+        if (paymentDurationStartDate !== sheetStartDate && paymentDurationEndDate !== sheetEndDate) {
           return res
             .status(StatusCodes.BAD_REQUEST)
             .send(responseGenerators({}, StatusCodes.BAD_REQUEST, 'please select valid Sheet Date', true));
