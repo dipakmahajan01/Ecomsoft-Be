@@ -12,13 +12,12 @@ export const getSheetOrderHandler = async (req: Request, res: Response) => {
     await getOrderHandlerSchema.validateAsync(req.query);
     const {
       status,
-      order_id: orderId,
-      sku_id: skuId,
+      order_item_id: orderId,
+      seller_sku: skuId,
       start_date: startDate,
       end_date: endDate,
       limit,
       is_analytics: isAnalytics,
-      flipkart_status: flipkartStatus,
       flipkart_by: flipkartBy,
     } = req.query;
 
@@ -26,25 +25,25 @@ export const getSheetOrderHandler = async (req: Request, res: Response) => {
     if (orderId) {
       where = {
         ...where,
-        ...{ order_id: orderId },
+        ...{ order_item_id: orderId },
       };
     }
     if (skuId) {
       where = {
         ...where,
-        ...{ sku: skuId },
+        ...{ seller_sku: skuId },
       };
     }
     if (startDate && endDate) {
       where = {
         ...where,
-        ...{ order_date: { $gte: startDate, $lte: endDate } },
+        ...{ invoice_date: { $gte: startDate, $lte: endDate } },
       };
     }
     if (status) {
       where = {
         ...where,
-        ...{ status },
+        ...{ return_type: status },
       };
     }
 
@@ -52,12 +51,6 @@ export const getSheetOrderHandler = async (req: Request, res: Response) => {
       where = {
         ...where,
         flipkart_account_by: flipkartBy,
-      };
-    }
-    if (flipkartStatus) {
-      where = {
-        ...where,
-        ...{ flipkart_status: flipkartStatus },
       };
     }
     let orderAnalyticsArr = [];
