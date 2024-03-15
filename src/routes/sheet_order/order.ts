@@ -77,7 +77,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
           payment_start_date: paymentDurationStartDate.toString(),
           payment_end_date: paymentDurationEndDate.toString(),
           created_at: setTimesTamp().toString(),
-          flipkart_by: flipkartAccount.platform_id,
+          flipkart_account_by: flipkartAccount.platform_id,
         };
         let isTexes = false;
         for (const order of orders) {
