@@ -8,7 +8,7 @@ const jwtOption = {
   expiresIn: process.env.EXPIRED_IN || '1d',
 };
 const refreshJwtOption = {
-  expiresIn: process.env.REFRESH_EXPIRED_IN || '1y',
+  expiresIn: process.env.REFRESH_EXPIRED_IN || '1w',
 };
 export const createJwtToken = (data: ITokenData) => {
   return sign(data, process.env.SECRET_KEY, jwtOption);

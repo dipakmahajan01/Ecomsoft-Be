@@ -4,12 +4,14 @@ import { ERROR, ORDER } from '../../common/global-constants';
 import { logsError, responseGenerators } from '../../lib';
 import SheetOrder from '../../model/sheet_order.model';
 import { getOrderHandlerSchema } from '../../helpers/validation/user.validation';
-import { setPagination } from '../../common/common-function';
+import { getUserData, setPagination } from '../../common/common-function';
 import ProfitLoss from '../../model/profit_loss.model';
+import UserCredential from '../../model/user_credential.model';
 
 export const getSheetOrderHandler = async (req: Request, res: Response) => {
   try {
     await getOrderHandlerSchema.validateAsync(req.query);
+    const { user_id: userId } = getUserData(req);
     const {
       status,
       order_item_id: orderId,
@@ -51,6 +53,14 @@ export const getSheetOrderHandler = async (req: Request, res: Response) => {
       where = {
         ...where,
         flipkart_account_by: flipkartBy,
+      };
+    }
+    const tokenUserAccount = await UserCredential.find({ user_id: userId }, { platform_id: 1 });
+    const userAllAccount = tokenUserAccount.map((data) => data.platform_id);
+    if (Object.keys(where).length === 0) {
+      where = {
+        ...where,
+        ...{ flipkart_account_by: { $in: userAllAccount } },
       };
     }
     let orderAnalyticsArr = [];
