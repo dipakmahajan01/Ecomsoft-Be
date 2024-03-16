@@ -3,7 +3,13 @@ import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import dayjs from 'dayjs';
-import { convertIntoUnix, generatePublicId, getUserData, setTimesTamp } from '../../common/common-function';
+import {
+  allZeroConvertIntoUnix,
+  convertIntoUnix,
+  generatePublicId,
+  getUserData,
+  setTimesTamp,
+} from '../../common/common-function';
 import UserCredential from '../../model/user_credential.model';
 import SheetOrder from '../../model/sheet_order.model';
 import { responseGenerators } from '../../lib';
@@ -37,12 +43,12 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         const date = dayjs(startDateString);
         const startMonth = date.month() + 1;
         const startYear = date.year();
-        const paymentDurationStartDate = convertIntoUnix(startDateString).toString();
-        const paymentDurationEndDate = convertIntoUnix(endDateString).toString();
+        const paymentDurationStartDate = allZeroConvertIntoUnix(startDateString).toString();
+        const paymentDurationEndDate = allZeroConvertIntoUnix(endDateString).toString();
         console.log('paymentDurationStartDate', typeof paymentDurationStartDate);
         console.log('paymentDurationEndDate', typeof paymentDurationEndDate);
         console.log('paymentDurationStartDate', paymentDurationStartDate);
-        console.log('paymentDurationStartDate', paymentDurationStartDate);
+        console.log('paymentDurationEndDate', paymentDurationEndDate);
         console.log('sheetStartDate', sheetStartDate);
         console.log('sheetEndDate', sheetEndDate);
 
