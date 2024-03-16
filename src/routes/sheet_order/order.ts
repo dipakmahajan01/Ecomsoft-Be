@@ -27,7 +27,8 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       if (sheetName === 'Summary of report') {
         let sheetsDate = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 0, range: 2 });
         let paymentDurationDate: any = sheetsDate[0];
-        const [startDateString, endDateString] = paymentDurationDate.__EMPTY_1
+        const regexPattern = /^\d{4}-\d{2}-\d{2}\s+-\s+\d{4}-\d{2}-\d{2}$/;
+        const [startDateString, endDateString] = regexPattern.test(paymentDurationDate.__EMPTY_1)
           ? paymentDurationDate.__EMPTY_1.split(' - ')
           : paymentDurationDate.__EMPTY_2.split(' - ');
         const date = dayjs(startDateString);
