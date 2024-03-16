@@ -41,6 +41,8 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         const paymentDurationEndDate = convertIntoUnix(endDateString).toString();
         console.log('paymentDurationStartDate', typeof paymentDurationStartDate);
         console.log('paymentDurationEndDate', typeof paymentDurationEndDate);
+        console.log('paymentDurationStartDate', paymentDurationStartDate);
+        console.log('paymentDurationStartDate', paymentDurationStartDate);
         if (paymentDurationStartDate !== sheetStartDate && paymentDurationEndDate !== sheetEndDate) {
           return res
             .status(StatusCodes.BAD_REQUEST)
