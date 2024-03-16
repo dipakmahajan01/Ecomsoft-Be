@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
@@ -14,6 +15,8 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     const { user_id: userId } = getUserData(req);
     const fileLocation: any = req.file.buffer;
     const { account_name: accountName, sheet_start_date: sheetStartDate, sheet_end_date: sheetEndDate } = req.body;
+    console.log('sheetStartDate', typeof sheetStartDate);
+    console.log('sheetEndDate', typeof sheetEndDate);
     const file = XLSX.read(fileLocation);
     // console.log('file :>> ', file);
     const sheetNameList = file.SheetNames;
@@ -36,7 +39,8 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         const startYear = date.year();
         const paymentDurationStartDate = convertIntoUnix(startDateString).toString();
         const paymentDurationEndDate = convertIntoUnix(endDateString).toString();
-
+        console.log('paymentDurationStartDate', typeof paymentDurationStartDate);
+        console.log('paymentDurationEndDate', typeof paymentDurationEndDate);
         if (paymentDurationStartDate !== sheetStartDate && paymentDurationEndDate !== sheetEndDate) {
           return res
             .status(StatusCodes.BAD_REQUEST)
