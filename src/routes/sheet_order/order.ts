@@ -46,7 +46,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         const paymentDurationStartDate = convertDateToUnix(startDateString);
         const paymentDurationEndDate = convertDateToUnix(endDateString);
         const convertIntoStrpaymentDurationStartDate = String(paymentDurationStartDate);
-        const convertIntoStrPaymentDurationEndDate = String(paymentDurationStartDate);
+        const convertIntoStrPaymentDurationEndDate = String(paymentDurationEndDate);
         console.log('paymentDurationStartDate', typeof paymentDurationStartDate);
         console.log('paymentDurationEndDate', typeof paymentDurationEndDate);
         console.log('paymentDurationStartDate', convertIntoStrpaymentDurationStartDate);
