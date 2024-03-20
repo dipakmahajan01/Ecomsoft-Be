@@ -71,10 +71,13 @@ export const convertUnixToDate = (date) => {
 };
 export const convertDateToUnix = (date: Date | null) => {
   if (date) {
-    return dayjs.utc(date).unix();
+    const formattedDate = dayjs(date).format('ddd MMM DD YYYY 00:00:00 [GMT+0530]');
+    const unixTimestamp = dayjs(formattedDate).unix();
+    return unixTimestamp;
   }
   return null;
 };
+
 export const allZeroConvertIntoUnix = (date) => {
   return dayjs(date).startOf('day').unix();
 };
