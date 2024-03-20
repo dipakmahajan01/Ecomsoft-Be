@@ -2,8 +2,10 @@ import uuid from 'react-uuid';
 import dayjs from 'dayjs';
 import bcrypt from 'bcrypt';
 import { Request } from 'express';
+import utc from 'dayjs/plugin/utc';
 import { ITokenData } from './global-constants';
 
+dayjs.extend(utc);
 const salt = bcrypt.genSaltSync(10);
 export const generatePublicId = (): string => {
   return uuid();
@@ -69,7 +71,7 @@ export const convertUnixToDate = (date) => {
 };
 export const convertDateToUnix = (date: Date | null) => {
   if (date) {
-    return dayjs(date).unix();
+    return dayjs.utc(date).unix();
   }
   return null;
 };
