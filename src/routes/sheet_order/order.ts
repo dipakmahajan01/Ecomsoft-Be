@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import dayjs from 'dayjs';
 import {
-  allZeroConvertIntoUnix,
+  convertDateToUnix,
   convertIntoUnix,
   generatePublicId,
   getUserData,
@@ -43,8 +43,10 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         const date = dayjs(startDateString);
         const startMonth = date.month() + 1;
         const startYear = date.year();
-        const paymentDurationStartDate = allZeroConvertIntoUnix(startDateString).toString();
-        const paymentDurationEndDate = allZeroConvertIntoUnix(endDateString).toString();
+        const paymentDurationStartDate = convertDateToUnix(startDateString);
+        const paymentDurationEndDate = convertDateToUnix(endDateString);
+        const convertIntoStrpaymentDurationStartDate = String(paymentDurationStartDate);
+        const convertIntoStrPaymentDurationEndDate = String(paymentDurationStartDate);
         console.log('paymentDurationStartDate', typeof paymentDurationStartDate);
         console.log('paymentDurationEndDate', typeof paymentDurationEndDate);
         console.log('paymentDurationStartDate', paymentDurationStartDate);
@@ -52,7 +54,10 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         console.log('sheetStartDate', sheetStartDate);
         console.log('sheetEndDate', sheetEndDate);
 
-        if (paymentDurationStartDate !== sheetStartDate && paymentDurationEndDate !== sheetEndDate) {
+        if (
+          convertIntoStrpaymentDurationStartDate !== sheetStartDate &&
+          convertIntoStrPaymentDurationEndDate !== sheetEndDate
+        ) {
           return res
             .status(StatusCodes.BAD_REQUEST)
             .send(responseGenerators({}, StatusCodes.BAD_REQUEST, 'please select valid Sheet Date', true));

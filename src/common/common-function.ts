@@ -67,7 +67,12 @@ export const convertIntoUnix = (date) => {
 export const convertUnixToDate = (date) => {
   return dayjs.unix(date).format('YYYY-MM-DD HH:mm:ss');
 };
-
+export const convertDateToUnix = (date: Date | null) => {
+  if (date) {
+    return dayjs(date).unix();
+  }
+  return null;
+};
 export const allZeroConvertIntoUnix = (date) => {
   return dayjs(date).startOf('day').unix();
 };
