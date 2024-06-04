@@ -6,29 +6,34 @@ import dayjs from 'dayjs';
 import {
   convertDateToUnix,
   convertIntoUnix,
+  convertPdfToExcel,
   generatePublicId,
   getUserData,
   setTimesTamp,
 } from '../../common/common-function';
-import UserCredential from '../../model/user_credential.model';
 import SheetOrder from '../../model/sheet_order.model';
 import { responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
 import ProfitLoss from '../../model/profit_loss.model';
+import sellerAccounts from '../../model/seller_accounts.model';
 
 export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
   try {
     const { user_id: userId } = getUserData(req);
     const fileLocation: any = req.file.buffer;
     const { account_name: accountName, sheet_start_date: sheetStartDate, sheet_end_date: sheetEndDate } = req.body;
-    console.log('sheetStartDate', typeof sheetStartDate);
-    console.log('sheetEndDate', typeof sheetEndDate);
+    //
+
+    const data = await convertPdfToExcel(fileLocation, '/src/uploads');
+
+    console.log('data', data);
+    //
+
     const file = XLSX.read(fileLocation);
-    // console.log('file :>> ', file);
     const sheetNameList = file.SheetNames;
     let orders = [];
     let sheets;
-    const flipkartAccount = await UserCredential.findOne({ account_name: accountName });
+    const flipkartAccount = await sellerAccounts.findOne({ account_name: accountName });
     if (!flipkartAccount) {
       return res.status(StatusCodes.NOT_FOUND).send(responseGenerators({}, StatusCodes.NOT_FOUND, 'Account not found'));
     }

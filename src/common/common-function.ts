@@ -1,8 +1,11 @@
+import XLSX from 'xlsx';
 import uuid from 'react-uuid';
 import dayjs from 'dayjs';
 import bcrypt from 'bcrypt';
 import { Request } from 'express';
 import utc from 'dayjs/plugin/utc';
+import pdf from 'pdf-parse';
+
 import { ITokenData } from './global-constants';
 
 dayjs.extend(utc);
@@ -102,3 +105,31 @@ export const setPagination = async (options) => {
   const offset = ((+options.offset ? +options.offset : 1) - 1) * (+limit ? +limit : 10);
   return { sort, offset, limit };
 };
+
+// eslint-disable-next-line consistent-return
+export async function convertPdfToExcel(pdfPath) {
+  try {
+    // Read the PDF file
+    // const dataBuffer = fs.readFileSync(pdfPath.buffer);
+
+    // Extract text and data from the PDF
+    const pdfData = await pdf(pdfPath.buffer);
+
+    // Split the text into lines
+    const lines = pdfData.text.split('\n');
+
+    // Create a new workbook and worksheet
+    // const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet([]);
+
+    // Populate the worksheet with data from the PDF
+    lines.forEach((line) => {
+      const row = line.split(/\s+/); // Split line into columns based on spaces
+      XLSX.utils.sheet_add_aoa(worksheet, [row], { origin: -1 }); // Append row
+    });
+    const sheet = XLSX.utils.sheet_to_json(worksheet);
+    return sheet;
+  } catch (error) {
+    return error;
+  }
+}

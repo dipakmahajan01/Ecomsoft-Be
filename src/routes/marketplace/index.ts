@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { addMarketPlaceCred } from './post.credential';
-import { getMarketplaceCred } from './get.credentials';
+import { addMarketPlaceCred } from './post.seller-account';
+import { getMarketplaceCred } from './get.seller-accounts';
 import { authentication } from '../../middleware/authenticate-user';
 
 const marketPlaceRoutes = Router();

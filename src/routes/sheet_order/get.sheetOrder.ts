@@ -6,7 +6,7 @@ import SheetOrder from '../../model/sheet_order.model';
 import { getOrderHandlerSchema } from '../../helpers/validation/user.validation';
 import { getUserData, setPagination } from '../../common/common-function';
 import ProfitLoss from '../../model/profit_loss.model';
-import UserCredential from '../../model/user_credential.model';
+import UserCredential from '../../model/seller_accounts.model';
 
 export const getSheetOrderHandler = async (req: Request, res: Response) => {
   try {
