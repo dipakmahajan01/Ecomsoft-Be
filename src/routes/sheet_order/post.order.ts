@@ -24,7 +24,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     const { account_name: accountName, sheet_start_date: sheetStartDate, sheet_end_date: sheetEndDate } = req.body;
     //
 
-    const data = await convertPdfToExcel(fileLocation, '/src/uploads');
+    const data = await convertPdfToExcel(fileLocation);
 
     console.log('data', data);
     //
