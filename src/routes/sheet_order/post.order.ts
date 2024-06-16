@@ -4,7 +4,7 @@
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { generatePublicId, setTimesTamp } from '../../common/common-function';
+import { convertUtcToUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
 import { responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
 import sellerAccounts from '../../model/seller_accounts.model';
@@ -133,9 +133,17 @@ export const returnOrder = async (req: Request, res: Response) => {
     }
     const file = XLSX.read(fileLocation);
     const sheetNameList: any = file.SheetNames;
-    const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], { header: 7, range: 7 });
+    const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], {
+      header: 7,
+      range: 7,
+      dateNF: 'mm/dd/yyyy',
+    });
     const orderD = [];
     for (const order of orderDetails) {
+      const orderDate = convertUtcToUnix(order['Order Date']);
+      const dispatchDate = convertUtcToUnix(order['Dispatch Date']);
+      const returnCreateDate = convertUtcToUnix(order['Return Created Date']);
+
       const findOrderData = await ReturnOrder.findOne({ suborder_number: order['Suborder Number'] });
       if (!findOrderData) {
         const orderInsertData = {
@@ -148,9 +156,9 @@ export const returnOrder = async (req: Request, res: Response) => {
           category: order['Order Number'],
           order_number: order['Order Number'],
           suborder_number: order['Suborder Number'],
-          order_date: order['Order Date'],
-          dispatch_date: order['Dispatch Date'],
-          return_created_date: order['Return Created Date'],
+          order_date: orderDate.toString(),
+          dispatch_date: dispatchDate.toString(),
+          return_created_date: returnCreateDate.toString(),
           type_of_return: order['Type of Return'],
           sub_type: order['Sub Type'],
           expected_delivery_date: order['Expected Delivery Date'],
@@ -162,6 +170,7 @@ export const returnOrder = async (req: Request, res: Response) => {
           return_reason: order['Return Reason'],
           detailed_return_reason: order['Detailed Return Reason'],
           created_at: setTimesTamp(),
+          created_by: accountDetails.platform_id,
         };
         orderD.push(orderInsertData);
       }
@@ -169,6 +178,7 @@ export const returnOrder = async (req: Request, res: Response) => {
     const data = await ReturnOrder.insertMany(orderD);
     return res.status(StatusCodes.OK).send(responseGenerators(data, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
+    console.log('error', error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, false));

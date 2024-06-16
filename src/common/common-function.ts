@@ -5,10 +5,11 @@ import bcrypt from 'bcrypt';
 import { Request } from 'express';
 import utc from 'dayjs/plugin/utc';
 import pdf from 'pdf-parse';
-
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { ITokenData } from './global-constants';
 
 dayjs.extend(utc);
+dayjs.extend(customParseFormat);
 const salt = bcrypt.genSaltSync(10);
 export const generatePublicId = (): string => {
   return uuid();
@@ -83,6 +84,18 @@ export const convertDateToUnix = (date: Date | null) => {
 
 export const allZeroConvertIntoUnix = (date) => {
   return dayjs(date).startOf('day').unix();
+};
+
+function excelDate(serial) {
+  // Excel serial date starts from January 1, 1900 which is 1
+  // JavaScript Date object month is 0-based, so we subtract 1 from the month.
+  const excelEpoch = dayjs('1899-12-31');
+  const daysToAdd = serial - 1; // Excel starts counting from 1
+  return excelEpoch.add(daysToAdd, 'day');
+}
+export const convertUtcToUnix = (dateString) => {
+  const date = excelDate(dateString);
+  return convertDateToUnix(new Date(date.format('YYYY-MM-DD')));
 };
 export const differenceBetweenTwoDate = (oldDate, todayDate) => {
   const date1 = dayjs.unix(oldDate);
