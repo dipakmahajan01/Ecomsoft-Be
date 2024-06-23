@@ -96,4 +96,7 @@ export const ORDER = {
   NOT_FOUND: 'order not found',
   FOUND: 'order found successfully',
   CREATED: 'order successfully inserted',
+  UPDATE: 'order update successfully',
+  NOT_UPDATE: 'Return order not updated',
+  RETURN_NOT_FOUND: 'Return order not found',
 };
