@@ -219,7 +219,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     }
     const returnOrderDetail = await ReturnOrder.find(
       { created_by: accountId, ...where },
-      { suborder_number: 1, order_date: 1, type_of_return: 1, return_created_date: 1 },
+      { suborder_number: 1, order_date: 1, is_return_update: 1, type_of_return: 1, return_created_date: 1 },
     );
     return res.status(StatusCodes.OK).send(responseGenerators(returnOrderDetail, StatusCodes.OK, ORDER.FOUND, false));
   } catch (error) {
