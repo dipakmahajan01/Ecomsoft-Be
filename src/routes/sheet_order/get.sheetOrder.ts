@@ -211,10 +211,10 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
         ...{ return_type: status },
       };
     }
-    if (isReturnUpdate === 'true') {
+    if (isReturnUpdate) {
       where = {
         ...where,
-        ...{ is_return_update: isReturnUpdate },
+        ...{ is_return_update: Boolean(isReturnUpdate) },
       };
     }
     const returnOrderDetail = await ReturnOrder.find(
