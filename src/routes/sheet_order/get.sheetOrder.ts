@@ -212,9 +212,16 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
       };
     }
     if (isReturnUpdate) {
+      let flag;
+      if (isReturnUpdate === 'true') {
+        flag = true;
+      } else {
+        flag = false;
+      }
+
       where = {
         ...where,
-        ...{ is_return_update: Boolean(isReturnUpdate) },
+        ...{ is_return_update: flag },
       };
     }
     const returnOrderDetail = await ReturnOrder.find(
