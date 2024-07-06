@@ -214,7 +214,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     if (isReturnUpdate === 'true') {
       where = {
         ...where,
-        ...{ is_return_update: !!isReturnUpdate },
+        ...{ is_return_update: isReturnUpdate },
       };
     }
     const returnOrderDetail = await ReturnOrder.find(
