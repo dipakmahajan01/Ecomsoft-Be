@@ -14,11 +14,12 @@ export const updateReturnOrderHandler = async (req: Request, res: Response) => {
     const updateReturnOrder = await ReturnOrder.findOneAndUpdate(
       { suborder_number: orderId },
       { $set: { is_return_update: true } },
+      { returnOriginal: false },
     );
     if (!updateReturnOrder) {
       return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.NOT_UPDATE, false));
     }
-    return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.UPDATE, false));
+    return res.status(StatusCodes.OK).send(responseGenerators(updateReturnOrder, StatusCodes.OK, ORDER.UPDATE, false));
   } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
