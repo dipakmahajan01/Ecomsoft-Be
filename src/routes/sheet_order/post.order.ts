@@ -101,7 +101,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
             courier: order.courier,
             order_date: order.date,
             supplier_name: order.supplier_name,
-            account_id: order.account_id,
+            account_id: flipkartAccount.platform_id,
             created_at: setTimesTamp(),
           };
           orderDetails.push({
