@@ -2,8 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 import { Request, Response } from 'express';
 import { ERROR, ORDER } from '../../common/global-constants';
 import { logsError, responseGenerators } from '../../lib';
-import ReturnOrder from '../../model/payment_order.model';
 import sellerAccounts from '../../model/seller_accounts.model';
+import Order from '../../model/sheet_order.model';
 
 // export const getSheetOrderHandler = async (req: Request, res: Response) => {
 //   try {
@@ -224,11 +224,35 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
         ...{ is_return_update: flag },
       };
     }
-    const returnOrderDetail = await ReturnOrder.find(
+    const returnOrderDetail = await Order.find(
       { created_by: accountId, ...where },
       { suborder_number: 1, order_date: 1, is_return_update: 1, type_of_return: 1, return_created_date: 1 },
     );
     return res.status(StatusCodes.OK).send(responseGenerators(returnOrderDetail, StatusCodes.OK, ORDER.FOUND, false));
+  } catch (error) {
+    logsError(error);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
+export const getAnalyticsHandler = async (req: Request, res: Response) => {
+  try {
+    const getAnalyticsHandler = await Order.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalOrder: { $sum: 1 },
+          totalReturn: {
+            $sum: {
+              $cond: { if: { $eq: ['$is_return_update', true] }, then: 1, else: 0 },
+            },
+          },
+        },
+      },
+    ]);
+    return res.status(StatusCodes.OK).send(responseGenerators(getAnalyticsHandler, StatusCodes.OK, ORDER.FOUND, false));
   } catch (error) {
     logsError(error);
     return res
