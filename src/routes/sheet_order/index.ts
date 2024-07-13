@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { authentication } from '../../middleware/authenticate-user';
-import { returnOrder, uploadOrderSheetHandler } from './post.order';
+import { paymentOrderUpload, uploadOrderSheetHandler } from './post.order';
 
 import { returnOrderHandler } from './get.sheetOrder';
 import { updateReturnOrderHandler } from './put.sheeOrder';
@@ -11,7 +11,7 @@ sheetOrder.use(authentication);
 const storage = multer.memoryStorage();
 const upload = multer({ storage, dest: '/uploads' });
 sheetOrder.post('/upload', upload.single('order_sheet'), uploadOrderSheetHandler);
-sheetOrder.post('/return', upload.single('return_sheet'), returnOrder);
+sheetOrder.post('/payment-sheet/upload', upload.single('payment_sheet'), paymentOrderUpload);
 // sheetOrder.get('/', getSheetOrderHandler);
 sheetOrder.get('/return', returnOrderHandler);
 sheetOrder.put('/update', updateReturnOrderHandler);

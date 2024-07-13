@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import { getOrderHandler } from './get.order';
+// import { Router } from 'express';
+// import { getOrderHandler } from './get.order';
 
-const dashboard = Router();
+// const dashboard = Router();
 
-dashboard.get('/get-order', getOrderHandler);
+// dashboard.get('/get-order', getOrderHandler);
 
-export default dashboard;
+// export default dashboard;

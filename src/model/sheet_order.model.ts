@@ -10,9 +10,11 @@ const orderSchema = new Schema({
   courier: { type: String },
   order_date: { type: String },
   supplier_name: { type: String },
+  order_status: { type: String },
   account_id: { type: String },
   created_at: { type: String },
   is_deleted: { type: Boolean },
+  is_return_update: { type: Boolean, default: false },
   updated_at: { type: String },
 });
 

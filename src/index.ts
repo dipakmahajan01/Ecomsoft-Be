@@ -14,7 +14,7 @@ import authRoutes from './routes/auth';
 import sellerRoute from './routes/sellers';
 import marketPlaceRoutes from './routes/marketplace';
 import rateCardRoutes from './routes/rate_card';
-import dashboard from './routes/dashboard';
+// import dashboard from './routes/dashboard';
 import sheetOrder from './routes/sheet_order';
 // import { todaysOrders } from './helpers/cron-helper/flipkart.cron';
 
@@ -188,7 +188,7 @@ app.use('/api/auth/', authRoutes);
 app.use('/api/marketplace', marketPlaceRoutes);
 app.use('/api/rate-card', rateCardRoutes);
 app.use('/api/seller', sellerRoute);
-app.use('/api/dashboard', dashboard);
+// app.use('/api/dashboard', dashboard);
 
 app.use('/api/sheet-order', sheetOrder);
 app.use((req: Request, res: Response) => {
@@ -213,17 +213,5 @@ app.use((error: any, req: Request, res: Response) => {
 process.on('unhandledRejection', function (reason, promise) {
   logger.error('Unhandled rejection', { reason, promise });
 });
-
-// cron set up
-// Need to check the value bsc env is returning string.
-if (process.env.IS_JOB === 'true') {
-  // orderApiCron();
-  // todaysOrders();
-  // cancelOrderApiCron();
-  // serverDayOrdersStatusUpdate();
-}
-
-// set socket connection
-// socketConnection(io);
 
 export default server;
