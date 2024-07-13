@@ -208,7 +208,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     if (status) {
       where = {
         ...where,
-        ...{ return_type: status },
+        ...{ status },
       };
     }
     if (isReturnUpdate) {
@@ -224,10 +224,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
         ...{ is_return_update: flag },
       };
     }
-    const returnOrderDetail = await Order.find(
-      { account_id: accountId, ...where },
-      { suborder_number: 1, order_date: 1, is_return_update: 1, type_of_return: 1, return_created_date: 1 },
-    );
+    const returnOrderDetail = await Order.find({ account_id: accountId, ...where });
     return res.status(StatusCodes.OK).send(responseGenerators(returnOrderDetail, StatusCodes.OK, ORDER.FOUND, false));
   } catch (error) {
     logsError(error);
