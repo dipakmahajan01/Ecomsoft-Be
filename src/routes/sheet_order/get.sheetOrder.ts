@@ -204,13 +204,8 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
         .status(StatusCodes.NOT_FOUND)
         .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
     }
+    let completedArr = [];
 
-    if (status) {
-      where = {
-        ...where,
-        ...{ status },
-      };
-    }
     if (isReturnUpdate) {
       let flag;
       if (isReturnUpdate === 'true') {
@@ -224,7 +219,28 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
         ...{ is_return_update: flag },
       };
     }
-    const returnOrderDetail = await Order.find({ account_id: accountId, ...where });
+    if (accountId !== 'all') {
+      where = {
+        ...where,
+        ...{
+          account_id: accountId,
+        },
+      };
+    }
+    if (status !== 'completed') {
+      completedArr = [
+        {
+          $match: { ...where },
+        },
+      ];
+    } else {
+      where = {
+        ...where,
+        ...{ status },
+      };
+      completedArr = [{ $match: { ...where } }];
+    }
+    const returnOrderDetail = await Order.aggregate(completedArr);
     return res.status(StatusCodes.OK).send(responseGenerators(returnOrderDetail, StatusCodes.OK, ORDER.FOUND, false));
   } catch (error) {
     logsError(error);

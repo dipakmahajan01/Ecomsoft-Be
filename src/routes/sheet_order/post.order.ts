@@ -206,7 +206,10 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       if (paymentOrderObj.liveOrderStatus === 'Return') {
         status = 'customerReturn';
       }
-      await Order.findOneAndUpdate({ sub_order_no: data['Sub Order No'] }, { $set: { order_status: status } });
+      await Order.findOneAndUpdate(
+        { sub_order_no: data['Sub Order No'] },
+        { $set: { order_status: status, order_price: paymentOrderObj.finalSettlementAmount } },
+      );
       orderD.push({
         insertOne: {
           document: paymentOrderObj,
