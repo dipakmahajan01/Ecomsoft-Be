@@ -9,7 +9,7 @@ const orderSchema = new Schema({
   size: { type: String },
   courier: { type: String },
   order_date: { type: String },
-  order_price: { type: Number },
+  order_price: { type: String },
   supplier_name: { type: String },
   order_status: { type: String },
   account_id: { type: String },

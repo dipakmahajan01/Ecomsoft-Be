@@ -208,7 +208,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       }
       await Order.findOneAndUpdate(
         { sub_order_no: data['Sub Order No'] },
-        { $set: { order_status: status, order_price: paymentOrderObj.finalSettlementAmount } },
+        { $set: { order_status: status, order_price: String(paymentOrderObj.finalSettlementAmount) } },
       );
       orderD.push({
         insertOne: {
