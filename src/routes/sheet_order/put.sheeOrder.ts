@@ -8,12 +8,12 @@ import Order from '../../model/sheet_order.model';
 export const updateReturnOrderHandler = async (req: Request, res: Response) => {
   try {
     const { order_id: orderId } = req.query;
-    const orderFound = await PaymentOrders.findOne({ suborder_number: orderId });
+    const orderFound = await PaymentOrders.findOne({ subOrderNo: orderId });
     if (!orderFound) {
       return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.NOT_FOUND, false));
     }
     const updateOrder = await Order.findOneAndUpdate(
-      { suborder_number: orderId },
+      { sub_order_no: orderId },
       { $set: { is_return_update: true } },
       { returnOriginal: false },
     );
