@@ -197,50 +197,28 @@ import Order from '../../model/sheet_order.model';
 export const returnOrderHandler = async (req: Request, res: Response) => {
   try {
     const { account_id: accountId, status, is_return_update: isReturnUpdate } = req.query;
-    let where = {};
-    const accountDetails = await sellerAccounts.findOne({ platform_id: accountId });
-    if (!accountDetails) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
-    }
-    let completedArr = [];
+    const where: any = {};
 
     if (isReturnUpdate) {
-      let flag;
-      if (isReturnUpdate === 'true') {
-        flag = true;
-      } else {
-        flag = false;
-      }
+      where.is_return_update = isReturnUpdate === 'true';
+    }
 
-      where = {
-        ...where,
-        ...{ is_return_update: flag },
-      };
-    }
     if (accountId !== 'all') {
-      where = {
-        ...where,
-        ...{
-          account_id: accountId,
-        },
-      };
+      const accountDetails = await sellerAccounts.findOne({ platform_id: accountId });
+      if (!accountDetails) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'Account not found', true));
+      }
+      where.account_id = accountId;
     }
-    if (status !== 'completed') {
-      completedArr = [
-        {
-          $match: { ...where },
-        },
-      ];
-    } else {
-      where = {
-        ...where,
-        ...{ status },
-      };
-      completedArr = [{ $match: { ...where } }];
+
+    if (status === 'completed') {
+      where.status = status;
     }
-    const returnOrderDetail = await Order.aggregate(completedArr);
+    const matchStage = { $match: where };
+    const returnOrderDetail = await Order.aggregate([matchStage]);
+
     return res.status(StatusCodes.OK).send(responseGenerators(returnOrderDetail, StatusCodes.OK, ORDER.FOUND, false));
   } catch (error) {
     logsError(error);
