@@ -214,7 +214,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     }
 
     if (status === 'completed') {
-      where.status = status;
+      where.order_status = status;
     }
     const matchStage = { $match: where };
     const returnOrderDetail = await Order.aggregate([matchStage]);
