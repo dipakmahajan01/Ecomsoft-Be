@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { Request, Response } from 'express';
-import { ERROR, ORDER } from '../../common/global-constants';
+import { ERROR, ITokenData, ORDER } from '../../common/global-constants';
 import { logsError, responseGenerators } from '../../lib';
 import sellerAccounts from '../../model/seller_accounts.model';
 import Order from '../../model/sheet_order.model';
@@ -215,6 +215,8 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
 
     if (status === 'completed') {
       where.order_status = status;
+    } else {
+      where.order_status = status;
     }
     const matchStage = { $match: where };
     const returnOrderDetail = await Order.aggregate([matchStage]);
@@ -254,12 +256,23 @@ export const getAnalyticsHandler = async (req: Request, res: Response) => {
 
 export const getSellerAnalyticsHandler = async (req: Request, res: Response) => {
   try {
-    const { account_name: accountName } = req.query;
+    const { account_id: accountId } = req.query;
+    const tokenData = (req.headers as any).tokenData as ITokenData;
     const where: any = {};
-    if (accountName) {
-      where.account_name = accountName;
+
+    if (accountId && accountId !== 'all') {
+      where.account_id = accountId;
+    } else {
+      const accountDetails = (await sellerAccounts.find({ user_id: tokenData.user_id }, { platform_id: 1 })).map(
+        (data) => data.platform_id,
+      );
+      where.account_id = { $in: accountDetails };
     }
+
     const orderArr = [
+      {
+        $match: { ...where },
+      },
       {
         $lookup: {
           from: 'payment_orders',
@@ -281,7 +294,7 @@ export const getSellerAnalyticsHandler = async (req: Request, res: Response) => 
               $cond: [{ $eq: ['$order_status', 'completed'] }, '$orderDetails.finalSettlementAmount', 0],
             },
           },
-          totalLoss: {
+          totalCustomerReturnLoss: {
             $sum: {
               $cond: [{ $eq: ['$order_status', 'customerReturn'] }, '$orderDetails.finalSettlementAmount', 0],
             },
@@ -294,8 +307,11 @@ export const getSellerAnalyticsHandler = async (req: Request, res: Response) => 
           },
         },
       },
+      {
+        $addFields: { totalSales: { $add: ['$totalProfit', '$totalCustomerReturnLoss'] } },
+      },
     ];
-    const sellerAnalytics = await Order.aggregate(orderArr);
+    const [sellerAnalytics] = await Order.aggregate(orderArr);
     return res.status(StatusCodes.OK).send(responseGenerators(sellerAnalytics, StatusCodes.OK, ORDER.FOUND, false));
   } catch (error) {
     logsError(error);
