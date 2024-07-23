@@ -3,7 +3,7 @@ import multer from 'multer';
 import { authentication } from '../../middleware/authenticate-user';
 import { paymentOrderUpload, uploadOrderSheetHandler } from './post.order';
 
-import { getAnalyticsHandler, returnOrderHandler } from './get.sheetOrder';
+import { getAnalyticsHandler, getSellerAnalyticsHandler, returnOrderHandler } from './get.sheetOrder';
 import { updateReturnOrderHandler } from './put.sheeOrder';
 
 const sheetOrder = Router();
@@ -15,5 +15,6 @@ sheetOrder.post('/payment-sheet/upload', upload.single('payment_sheet'), payment
 // sheetOrder.get('/', getSheetOrderHandler);
 sheetOrder.get('/return', returnOrderHandler);
 sheetOrder.get('/order-report', getAnalyticsHandler);
+sheetOrder.get('/order-analytics', getSellerAnalyticsHandler);
 sheetOrder.put('/update', updateReturnOrderHandler);
 export default sheetOrder;
