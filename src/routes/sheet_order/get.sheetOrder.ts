@@ -251,3 +251,56 @@ export const getAnalyticsHandler = async (req: Request, res: Response) => {
       .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+export const getSellerAnalyticsHandler = async (req: Request, res: Response) => {
+  try {
+    const { account_name: accountName } = req.query;
+    const where: any = {};
+    if (accountName) {
+      where.account_name = accountName;
+    }
+    const orderArr = [
+      {
+        $lookup: {
+          from: 'payment_orders',
+          localField: 'sub_order_no',
+          foreignField: 'subOrderNo',
+          as: 'orderDetails',
+        },
+      },
+      {
+        $unwind: { path: '$orderDetails', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $group: {
+          _id: 'null',
+          totalOrder: { $sum: 1 },
+          totalReturn: { $sum: { $cond: [{ $eq: ['$is_return_update', true] }, 1, 0] } },
+          totalProfit: {
+            $sum: {
+              $cond: [{ $eq: ['$order_status', 'completed'] }, '$orderDetails.finalSettlementAmount', 0],
+            },
+          },
+          totalLoss: {
+            $sum: {
+              $cond: [{ $eq: ['$order_status', 'customerReturn'] }, '$orderDetails.finalSettlementAmount', 0],
+            },
+          },
+          totalCustomerReturn: {
+            $sum: { $cond: [{ $eq: ['$order_status', 'customerReturn'] }, 1, 0] },
+          },
+          totalCurrieReturn: {
+            $sum: { $cond: [{ $eq: ['$order_status', 'currierReturn'] }, 1, 0] },
+          },
+        },
+      },
+    ];
+    const sellerAnalytics = await Order.aggregate(orderArr);
+    return res.status(StatusCodes.OK).send(responseGenerators(sellerAnalytics, StatusCodes.OK, ORDER.FOUND, false));
+  } catch (error) {
+    logsError(error);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, true));
+  }
+};
