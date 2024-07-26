@@ -196,7 +196,7 @@ import Order from '../../model/sheet_order.model';
 
 export const returnOrderHandler = async (req: Request, res: Response) => {
   try {
-    const { account_id: accountId, status, is_return_update: isReturnUpdate } = req.query;
+    const { account_id: accountId, status, is_return_update: isReturnUpdate, isOrderIssue } = req.query;
     const where: any = {};
 
     if (isReturnUpdate) {
@@ -212,7 +212,9 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
       }
       where.account_id = accountId;
     }
-
+    if (isOrderIssue) {
+      where.is_order_issue = isOrderIssue === 'true';
+    }
     if (status === 'completed') {
       where.order_status = status;
     } else {

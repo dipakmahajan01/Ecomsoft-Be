@@ -16,6 +16,7 @@ import marketPlaceRoutes from './routes/marketplace';
 import rateCardRoutes from './routes/rate_card';
 // import dashboard from './routes/dashboard';
 import sheetOrder from './routes/sheet_order';
+import { createIssueOrderCron } from './helpers/cron-helper/flipkart.cron';
 // import { todaysOrders } from './helpers/cron-helper/flipkart.cron';
 
 dotenv.config();
@@ -209,7 +210,7 @@ app.use((error: any, req: Request, res: Response) => {
     ),
   );
 });
-
+createIssueOrderCron();
 process.on('unhandledRejection', function (reason, promise) {
   logger.error('Unhandled rejection', { reason, promise });
 });

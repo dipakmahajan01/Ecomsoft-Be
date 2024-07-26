@@ -146,3 +146,9 @@ export async function convertPdfToExcel(pdfPath) {
     return error;
   }
 }
+
+export async function date15DaysAgo() {
+  const today = dayjs();
+  const date15DaysAgo = today.subtract(15, 'day');
+  return date15DaysAgo.unix();
+}
