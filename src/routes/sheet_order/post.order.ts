@@ -28,7 +28,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     }
     let sellerData;
     const sheetData = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[1]], { header: 2, range: 1 });
-    const orderId = sheetData[0]['Sub Order No.'].replace(/\r\n/g, '');
+    const orderId = sheetData[0]['Sub Order No.']?.replace(/\r\n/g, '');
     const findOrderDetails = await Order.findOne({ sub_order_no: orderId });
     if (findOrderDetails) {
       return res
