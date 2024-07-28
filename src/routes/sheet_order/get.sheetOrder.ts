@@ -197,6 +197,7 @@ import Order from '../../model/sheet_order.model';
 export const returnOrderHandler = async (req: Request, res: Response) => {
   try {
     const { account_id: accountId, status, is_return_update: isReturnUpdate, isOrderIssue } = req.query;
+    const tokenData = (await (req.headers as any).tokenData) as ITokenData;
     const where: any = {};
 
     if (isReturnUpdate) {
@@ -211,6 +212,11 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
           .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'Account not found', true));
       }
       where.account_id = accountId;
+    } else {
+      const accountIds = await sellerAccounts
+        .findOne({ user_id: tokenData.user_id }, { platform_id: 1 })
+        ?.distinct('platform_id');
+      where.account_id = { $in: accountIds };
     }
     if (isOrderIssue) {
       where.is_order_issue = isOrderIssue === 'true';
