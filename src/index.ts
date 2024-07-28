@@ -59,7 +59,7 @@ app.use((req, res, next) => {
 
 const health = (req: Request, res: Response) => {
   res.json({
-    message: 'ecomsoft server is working',
+    message: 'ecomsoft is working properly please check your api',
     env: process.env.NODE_ENV,
     headers: req.headers,
   });
