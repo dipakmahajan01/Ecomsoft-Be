@@ -108,3 +108,10 @@ export function extractJwtToken(authorizationHeader: string) {
   const match = authorizationHeader?.match(/^Bearer (.+)$/i);
   return match ? match[1] : null;
 }
+
+export function jsonCleaner(jsonArray: Record<string, any>) {
+  const jsonString = JSON.stringify(jsonArray);
+  const cleanedString = jsonString.replace(/\\n/g, '').replace(/\s+/g, ' ').trim();
+  const trimmedString = cleanedString.replace(/"\s+|\s+"/g, '"');
+  return JSON.parse(trimmedString);
+}
