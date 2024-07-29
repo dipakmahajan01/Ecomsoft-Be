@@ -4,6 +4,7 @@ import { ERROR, ITokenData, ORDER } from '../../common/global-constants';
 import { logsError, responseGenerators } from '../../lib';
 import sellerAccounts from '../../model/seller_accounts.model';
 import Order from '../../model/sheet_order.model';
+import { returnOrderSchema } from '../../helpers/validation/sheetorder.validation';
 
 // export const getSheetOrderHandler = async (req: Request, res: Response) => {
 //   try {
@@ -196,7 +197,8 @@ import Order from '../../model/sheet_order.model';
 
 export const returnOrderHandler = async (req: Request, res: Response) => {
   try {
-    const { account_id: accountId, status, is_return_update: isReturnUpdate, isOrderIssue } = req.query;
+    await returnOrderSchema.validateAsync(req.query);
+    const { account_id: accountId, status, is_return_update: isReturnUpdate, is_order_issue: isOrderIssue } = req.query;
     const tokenData = (await (req.headers as any).tokenData) as ITokenData;
     const where: any = {};
 
@@ -240,7 +242,24 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
 
 export const getAnalyticsHandler = async (req: Request, res: Response) => {
   try {
+    const tokenData = (req.headers as any).tokenData as ITokenData;
+    const { account_id: accountId } = req.query;
+    let where;
+    if (accountId !== 'all') {
+      where.account_id = accountId;
+    } else {
+      const accountIds = await sellerAccounts
+        .findOne({ user_id: tokenData.user_id }, { platform_id: 1 })
+        ?.distinct('platform_id');
+      where.account_id = { $in: accountIds };
+    }
+
     const getAnalyticsHandler = await Order.aggregate([
+      {
+        $match: {
+          ...where,
+        },
+      },
       {
         $group: {
           _id: null,

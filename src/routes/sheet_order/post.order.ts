@@ -155,12 +155,8 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       extractSheetData[sheetName] = { parsedData, sheets: cleanSheetData };
       for (const order of orders) {
         const orderId = order.sub_order_no_.replace(/\r\n/g, '');
-        console.log('orderId', orderId, 'typeof', typeof orderId);
-
         if (!orderId?.trim()) continue;
-
         const findOrderData = await Order.findOne({ sub_order_no: orderId || '' });
-        console.log('findOrderData', findOrderData);
         if (!findOrderData) {
           const orderInsertData = {
             order_id: generatePublicId(),
