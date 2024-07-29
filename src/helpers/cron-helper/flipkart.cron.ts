@@ -31,7 +31,7 @@ import { createIssueOrder } from '../../services/messoIssueOrder';
 //   });
 // };
 export const createIssueOrderCron = async () => {
-  cron.schedule('* * * * *', async () => {
+  cron.schedule('0 0 * * *', async () => {
     logInfo('---------------', 'today order cron job running-------------------');
     await createIssueOrder();
   });
