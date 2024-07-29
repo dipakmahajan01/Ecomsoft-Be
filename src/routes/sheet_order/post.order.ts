@@ -5,95 +5,166 @@ import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { generatePublicId, setTimesTamp } from '../../common/common-function';
-import { responseGenerators } from '../../lib';
+import { jsonCleaner, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
 import sellerAccounts from '../../model/seller_accounts.model';
 import Order from '../../model/sheet_order.model';
 import PaymentOrders from '../../model/payment_order.model';
+import { convertPdfToExcel, getExcelFileByUrl } from '../../helpers/excel/convertPdfToExcel';
+
+const API_KEY = process.env.PDF_REST_API_KEY;
+
+// function generateFileName(baseName: string): string {
+//   const now = new Date();
+//   const year = now.getFullYear();
+//   const month = String(now.getMonth() + 1).padStart(2, '0');
+//   const day = String(now.getDate()).padStart(2, '0');
+//   const hours = String(now.getHours()).padStart(2, '0');
+//   const minutes = String(now.getMinutes()).padStart(2, '0');
+//   const seconds = String(now.getSeconds()).padStart(2, '0');
+
+//   return `${baseName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+// }
+
+// function storeBufferAndObject(buffer: Buffer, obj: any, filePath: string): void {
+//   // Ensure the directory exists
+//   const excelPath = `${filePath + generateFileName('excel')}.xlsx`;
+//   const dir = path.dirname(excelPath);
+//   if (!fs.existsSync(dir)) {
+//     fs.mkdirSync(dir, { recursive: true });
+//   }
+
+//   // Write the buffer to the specified file path
+//   fs.writeFileSync(excelPath, buffer);
+
+//   // Write the object to a JSON file in the same directory
+//   const objFilePath = `${filePath + generateFileName('json')}.json`;
+//   fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
+// }
+
+function isSubstringInArray(substring: string, array: string[]): boolean {
+  for (const str of array) {
+    if (str?.toLowerCase()?.includes(substring.toLowerCase())) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
   try {
     const fileLocation: any = req.file.buffer;
     const { account_name: accountName } = req.body;
 
-    const file = XLSX.read(fileLocation);
-    const sheetNameList = file.SheetNames;
-    let orders = [];
-    let sheets;
-    const flipkartAccount = await sellerAccounts.findOne({ account_name: accountName });
-    if (!flipkartAccount) {
+    const sellerAccount = await sellerAccounts.findOne({ account_name: accountName });
+    if (!sellerAccount) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'Account not found', true));
     }
-    let sellerData;
-    const sheetData = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[1]], { header: 2, range: 1 });
-    const orderId = sheetData[0]['Sub Order No.']?.replace(/\r\n/g, '');
-    const findOrderDetails = await Order.findOne({ sub_order_no: orderId });
-    if (findOrderDetails) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(responseGenerators({}, StatusCodes.BAD_REQUEST, 'Order sheet already added', true));
+
+    const { isSuccess, data, message } = await convertPdfToExcel(fileLocation, API_KEY);
+    if (!isSuccess) {
+      return res.status(StatusCodes.BAD_REQUEST).send(responseGenerators({}, StatusCodes.BAD_REQUEST, message, true));
     }
-    const orderDetails = [];
+    const excelFile = await getExcelFileByUrl(data.outputUrl);
+
+    const file = XLSX.read(excelFile);
+    const sheetNameList = file.SheetNames;
+    let orders = [];
+    // let sheets;
+    // let sellerData;
+    let orderDetails = [];
+    const extractSheetData = {};
+    let isSubOrderIdChecked = false;
     for (const sheetName of sheetNameList) {
-      if (sheetName === 'Table 1') {
-        continue; // Skip 'Table 1'
-      }
-      let parsedData = {};
-      if (sheetName === 'Table 2') {
-        const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 1, range: 0 });
+      const parsedData: any = {};
+      const headerSheet = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 1, range: 0 });
 
-        let dataStr: any = orderDetails[0];
-        let lines = dataStr[0].split('\n');
-        let courierInfo = lines[0].split(':');
+      let dataStr: any = headerSheet[0];
+      console.log('dataStr', dataStr);
+      if (isSubstringInArray('Picklist', dataStr)) continue;
 
-        parsedData['Courier'] = courierInfo[1].trim();
-        let supplierDateInfo = lines[1].split('Date :');
-        let supplierName = supplierDateInfo[0].split(':')[1].trim();
-        let date = supplierDateInfo[1].trim();
-        // Store in the object
-        parsedData['Supplier Name'] = supplierName;
-        parsedData['date'] = date;
-        const accountId: any = (
-          await sellerAccounts.findOne({
-            account_name: parsedData['Supplier Name'],
-          })
-        ).platform_id;
-        parsedData['account_id'] = accountId;
-        orders = Array.from([]);
-        sheets = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 2, range: 1 });
-        for (let i = 0; i < sheets.length; i += 1) {
-          let sheetData = sheets[i];
-          const sheetObject = { ...sheetData, ...parsedData };
-          const orderData: any = Object.entries(sheetObject).reduce((acc, curr) => {
-            let [key, value] = curr;
-            acc[typeof key === 'string' ? key.trim().toLowerCase().replace(/[\W_]/g, '_') : key] = value;
-            return acc;
-          }, {});
-          orders.push(orderData);
-        }
-        sellerData = parsedData;
-      } else {
-        orders = Array.from([]);
-        sheets = XLSX.utils.sheet_to_json(file.Sheets[sheetName]);
-        for (let i = 0; i < sheets.length; i += 1) {
-          let sheetData = sheets[i];
-          const sheetObject = { ...sheetData, ...sellerData };
-          const orderData: any = Object.entries(sheetObject).reduce((acc, curr) => {
-            let [key, value] = curr;
-            acc[typeof key === 'string' ? key.trim().toLowerCase().replace(/[\W_]/g, '_') : key] = value;
-            return acc;
-          }, {});
-          orders.push(orderData);
-        }
+      let lines = dataStr[0].split('\n');
+      let courierInfo = lines[0]?.split(':');
+      let supplierDateInfo = lines[1]?.split('Date :');
+      // TODO :- Undidine error, Need to handle the undifined data and parse properly.
+      let supplierName = supplierDateInfo[0]?.split(':')[1]?.trim();
+      let date = supplierDateInfo[1]?.trim();
+
+      parsedData['Courier'] = courierInfo[1]?.trim();
+      parsedData['Supplier Name'] = supplierName;
+      parsedData['date'] = date;
+
+      const accountDetails = await sellerAccounts.findOne({
+        account_name: parsedData['Supplier Name'],
+      });
+      const accountId: any = accountDetails?.platform_id;
+
+      if (sellerAccount.platform_id === accountId) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .send(
+            responseGenerators(
+              {},
+              StatusCodes.BAD_REQUEST,
+              'Provided sheet does not match the selected account. Please select the correct account',
+              true,
+            ),
+          );
       }
+
+      parsedData['account_id'] = accountId;
+
+      const sheets = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 2, range: 1 });
+      const cleanSheetData = jsonCleaner(sheets);
+
+      const orderId = cleanSheetData[0]['Sub Order No.']?.replace(/\r\n/g, '');
+
+      if (!isSubOrderIdChecked) {
+        const findOrderDetails = await Order.findOne({ sub_order_no: orderId });
+        if (findOrderDetails) {
+          return res
+            .status(StatusCodes.BAD_REQUEST)
+            .send(responseGenerators({}, StatusCodes.BAD_REQUEST, 'Order sheet already added', true));
+        }
+        isSubOrderIdChecked = true;
+      }
+      // let parsedData = {};
+      orders = Array.from([]);
+      // sheets = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 2, range: 1 });
+      for (let i = 0; i < cleanSheetData.length; i += 1) {
+        let sheetData: any = cleanSheetData[i];
+        const sheetObject = { ...sheetData, ...parsedData };
+        const orderData: any = Object.entries(sheetObject).reduce((acc, curr) => {
+          let [key, value] = curr;
+          acc[
+            typeof key === 'string'
+              ? key
+                  .trim()
+                  .toLowerCase()
+                  .replace(/[\W_]/g, '_')
+                  .replace(/\r?\n|\r/g, '')
+              : key
+          ] = value;
+          return acc;
+        }, {});
+        orders.push(orderData);
+      }
+
+      extractSheetData[sheetName] = { parsedData, sheets: cleanSheetData };
       for (const order of orders) {
-        const findOrderData = await Order.findOne({ sub_order_no: order.sub_order_no_.replace(/\r\n/g, '') });
+        const orderId = order.sub_order_no_.replace(/\r\n/g, '');
+        console.log('orderId', orderId, 'typeof', typeof orderId);
+
+        if (!orderId?.trim()) continue;
+
+        const findOrderData = await Order.findOne({ sub_order_no: orderId || '' });
+        console.log('findOrderData', findOrderData);
         if (!findOrderData) {
           const orderInsertData = {
             order_id: generatePublicId(),
-            sub_order_no: order.sub_order_no_.replace(/\r\n/g, ''),
+            sub_order_no: order.sub_order_no_,
             awb: order.awb,
             sku: order.sku,
             qty: order.qty_,
@@ -101,7 +172,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
             courier: order.courier,
             order_date: order.date,
             supplier_name: order.supplier_name,
-            account_id: flipkartAccount.platform_id,
+            account_id: sellerAccount.platform_id,
             created_at: setTimesTamp(),
           };
           orderDetails.push({
@@ -112,7 +183,10 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         }
       }
     }
+    // const sheetData = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[1]], { header: 2, range: 1 });
+    // const removeNewlinesFromJsonData = jsonCleaner(extractSheetData);
     await Order.bulkWrite(orderDetails);
+    // storeBufferAndObject(excelFile, { removeNewlinesFromJsonData, orderDetails }, 'demoUpload');
     return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
     console.log('error', error);

@@ -2,8 +2,8 @@ import mongoose, { Schema } from 'mongoose';
 
 // Define the schema
 const orderSchema = new Schema({
-  order_id: { type: String },
-  sub_order_no: { type: String },
+  order_id: { type: String, unique: true },
+  sub_order_no: { type: String, unique: true },
   sku: { type: String },
   qty: { type: Number },
   size: { type: String },
