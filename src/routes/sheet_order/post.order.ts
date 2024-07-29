@@ -4,7 +4,7 @@
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { generatePublicId, setTimesTamp } from '../../common/common-function';
+import { convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
 import sellerAccounts from '../../model/seller_accounts.model';
@@ -205,7 +205,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
     const file = XLSX.read(fileLocation);
     const sheetNameList: any = file.SheetNames;
     const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], {
-      header: 2,
+      header: 0,
       range: 1,
     });
     let orderD = [];
@@ -216,10 +216,12 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         .send(responseGenerators({}, StatusCodes.OK, 'payment sheet already added', true));
     }
     for (const data of orderDetails) {
+      if (data[0]) continue;
+      console.log('data', data['Dispatch Date']);
       const paymentOrderObj = {
         subOrderNo: data['Sub Order No'],
-        orderDate: new Date(data['Order Date']),
-        dispatchDate: new Date(data['Dispatch Date']),
+        orderDate: !data['Order Date'] ? null : convertIntoUnix(data['Order Date'])?.toString(),
+        dispatchDate: !data['Dispatch Date'] ? null : convertIntoUnix(data['Dispatch Date'])?.toString(),
         productName: data['Product Name'],
         supplierSKU: data['Supplier SKU'],
         liveOrderStatus: data['Live Order Status'],
@@ -227,7 +229,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         listingPriceInclGSTAndCommission: parseFloat(data['Listing Price (Incl. GST & Commission)']),
         quantity: parseInt(data['Quantity'], 10),
         transactionID: data['Transaction ID'],
-        paymentDate: new Date(data['Payment Date']),
+        paymentDate: !data['Order Date'] ? null : convertIntoUnix(data['Payment Date'])?.toString(),
         finalSettlementAmount: parseFloat(data['Final Settlement Amount']),
         priceType: data['Price Type'],
         totalSaleAmountInclCommissionAndGST: parseFloat(data['Total Sale Amount (Incl. Commission & GST)']),
@@ -270,7 +272,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         recoveryReason: data['Recovery Reason'],
       };
       let status = 'completed';
-      if (paymentOrderObj.liveOrderStatus === 'RTO' || paymentOrderData.finalSettlementAmount === 0) {
+      if (paymentOrderObj.liveOrderStatus === 'RTO' || paymentOrderData?.finalSettlementAmount === 0.0) {
         status = 'currierReturn';
       }
       if (paymentOrderObj.liveOrderStatus === 'Return') {

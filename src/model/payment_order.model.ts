@@ -59,8 +59,8 @@ interface IOrder extends Document {
 // Create the schema
 const paymentOrderSchema: Schema = new Schema({
   subOrderNo: { type: String, unique: true },
-  orderDate: { type: Date },
-  dispatchDate: { type: Date },
+  orderDate: { type: String },
+  dispatchDate: { type: String },
   productName: { type: String },
   supplierSKU: { type: String },
   liveOrderStatus: { type: String },
@@ -68,7 +68,7 @@ const paymentOrderSchema: Schema = new Schema({
   listingPriceInclGSTAndCommission: { type: Number },
   quantity: { type: Number },
   transactionID: { type: String },
-  paymentDate: { type: Date },
+  paymentDate: { type: String },
   finalSettlementAmount: { type: Number },
   priceType: { type: String },
   totalSaleAmountInclCommissionAndGST: { type: Number },
