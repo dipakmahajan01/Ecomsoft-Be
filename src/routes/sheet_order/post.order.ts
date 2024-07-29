@@ -63,8 +63,11 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'Account not found', true));
     }
 
-    const excelData = await convertPdfToExcel(fileLocation, API_KEY);
-    const excelFile = await getExcelFileByUrl(excelData.outputUrl);
+    const { isSuccess, data, message } = await convertPdfToExcel(fileLocation, API_KEY);
+    if (!isSuccess) {
+      return res.status(StatusCodes.BAD_REQUEST).send(responseGenerators({}, StatusCodes.BAD_REQUEST, message, true));
+    }
+    const excelFile = await getExcelFileByUrl(data.outputUrl);
 
     const file = XLSX.read(excelFile);
     const sheetNameList = file.SheetNames;

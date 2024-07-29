@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import { logInfo } from '../../lib';
 
 interface UploadResponseData {
   files: { id: string }[];
@@ -6,7 +7,11 @@ interface UploadResponseData {
 
 interface ExcelResponseData {
   // Define the structure of the Excel response as per your API documentation
-  outputUrl: string;
+  isSuccess: boolean;
+  message: string;
+  data: {
+    outputUrl: string;
+  };
 }
 
 async function uploadFile(fileBuffer: Buffer, apiKey: string): Promise<string> {
@@ -47,7 +52,43 @@ export async function getExcelFileByUrl(url: string): Promise<Buffer> {
   return Buffer.from(response.data, 'base64');
 }
 
+const waitFor = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+const RETRY_COUNT = 2;
+const WAIT_TIME_MS = 400;
 export async function convertPdfToExcel(pdfFile: Buffer, apiKey: string): Promise<ExcelResponseData> {
-  const uploadedId = await uploadFile(pdfFile, apiKey);
-  return convertToExcel(uploadedId, apiKey);
+  let uploadedId = null;
+
+  for (let i = 0; i < RETRY_COUNT; i += 1) {
+    try {
+      uploadedId = await uploadFile(pdfFile, apiKey);
+      break;
+    } catch (error) {
+      logInfo('Retrying...');
+      await waitFor(WAIT_TIME_MS);
+    }
+  }
+
+  for (let i = 0; i < RETRY_COUNT; i += 1) {
+    try {
+      const excelResponse = await convertToExcel(uploadedId, apiKey);
+      return {
+        isSuccess: true,
+        message: 'Successfully converted PDF to Excel',
+        data: excelResponse,
+      };
+    } catch (error) {
+      logInfo('Retrying...');
+      await waitFor(WAIT_TIME_MS);
+    }
+  }
+
+  return {
+    isSuccess: false,
+    message: 'Failed to convert PDF to Excel. Please try again later',
+    data: null,
+  };
 }
