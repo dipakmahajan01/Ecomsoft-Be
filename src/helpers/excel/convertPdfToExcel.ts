@@ -43,7 +43,7 @@ async function convertToExcel(uploadedId: string, apiKey: string): Promise<Excel
     data: { id: uploadedId },
   };
 
-  const excelResponse: AxiosResponse<ExcelResponseData> = await axios(excelConfig);
+  const excelResponse: AxiosResponse<ExcelResponseData['data']> = await axios(excelConfig);
   return excelResponse.data;
 }
 

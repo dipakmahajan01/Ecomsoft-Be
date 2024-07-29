@@ -5,8 +5,7 @@
   "main": "server.js",
   "scripts": {
     "prebuild": "rimraf dist",
-    "start": "node --inspect build/server.js",
-    "runDebug": "nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'nodemon --inspect=9229 -r ts-node/register src/index.ts'",
+    "start": "node build/server.js",
     "dev": "nodemon  server.ts",
     "ts": "tsnd --respawn server.ts",
     "build": "tsc",
