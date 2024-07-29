@@ -31,7 +31,7 @@ async function uploadFile(fileBuffer: Buffer, apiKey: string): Promise<string> {
   return uploadResponse.data.files[0].id;
 }
 
-async function convertToExcel(uploadedId: string, apiKey: string): Promise<ExcelResponseData> {
+async function convertToExcel(uploadedId: string, apiKey: string): Promise<ExcelResponseData['data']> {
   const excelConfig = {
     method: 'post' as const,
     maxBodyLength: Infinity,
