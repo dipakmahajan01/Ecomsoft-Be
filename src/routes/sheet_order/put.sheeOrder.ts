@@ -13,7 +13,7 @@ export const updateReturnOrderHandler = async (req: Request, res: Response) => {
     }
     const updateOrder = await Order.findOneAndUpdate(
       { sub_order_no: orderId },
-      { $set: { is_return_update: true } },
+      { $set: { is_return_update: true, issue_message: 'The product has been received but payment is pending' } },
       { returnOriginal: false },
     );
     if (!updateOrder) {

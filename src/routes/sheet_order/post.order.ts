@@ -270,15 +270,34 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         recoveryReason: data['Recovery Reason'],
       };
       let status = 'completed';
-      if (paymentOrderObj.liveOrderStatus === 'RTO') {
+      if (paymentOrderObj.liveOrderStatus === 'RTO' || paymentOrderData.finalSettlementAmount === 0) {
         status = 'currierReturn';
       }
       if (paymentOrderObj.liveOrderStatus === 'Return') {
         status = 'customerReturn';
       }
+      if (paymentOrderObj.liveOrderStatus === 'Exchange') {
+        status = 'exchange';
+      }
+      if (paymentOrderObj.liveOrderStatus === 'Shipped') {
+        status = 'shipped';
+      }
+      if (paymentOrderObj.liveOrderStatus === 'Cancelled') {
+        status = 'cancelled';
+      }
       await Order.findOneAndUpdate(
-        { sub_order_no: data['Sub Order No'] },
+        { sub_order_no: data['Sub Order No'], is_return_update: true },
         { $set: { order_status: status, order_price: String(paymentOrderObj.finalSettlementAmount) } },
+      );
+      await Order.findOneAndUpdate(
+        { sub_order_no: data['Sub Order No'], is_return_update: false },
+        {
+          $set: {
+            order_status: status,
+            order_price: String(paymentOrderObj.finalSettlementAmount),
+            issue_message: 'The payment is done but product is pending delivery to your company.',
+          },
+        },
       );
       orderD.push({
         insertOne: {

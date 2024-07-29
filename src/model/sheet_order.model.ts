@@ -17,6 +17,7 @@ const orderSchema = new Schema({
   is_deleted: { type: Boolean },
   is_return_update: { type: Boolean, default: false },
   is_order_issue: { type: Boolean, default: false },
+  issue_message: { type: String },
   updated_at: { type: String },
 });
 
