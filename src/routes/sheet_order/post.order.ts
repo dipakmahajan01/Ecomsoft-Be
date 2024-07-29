@@ -4,8 +4,6 @@
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import fs from 'fs';
-import path from 'path';
 import { generatePublicId, setTimesTamp } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
@@ -14,35 +12,35 @@ import Order from '../../model/sheet_order.model';
 import PaymentOrders from '../../model/payment_order.model';
 import { convertPdfToExcel, getExcelFileByUrl } from '../../helpers/excel/convertPdfToExcel';
 
-const API_KEY = '7c550e3a-8405-4c8a-87c3-b00cc4ec7a1e';
+const API_KEY = process.env.PDF_REST_API_KEY;
 
-function generateFileName(baseName: string): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
+// function generateFileName(baseName: string): string {
+//   const now = new Date();
+//   const year = now.getFullYear();
+//   const month = String(now.getMonth() + 1).padStart(2, '0');
+//   const day = String(now.getDate()).padStart(2, '0');
+//   const hours = String(now.getHours()).padStart(2, '0');
+//   const minutes = String(now.getMinutes()).padStart(2, '0');
+//   const seconds = String(now.getSeconds()).padStart(2, '0');
 
-  return `${baseName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
-}
+//   return `${baseName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+// }
 
-function storeBufferAndObject(buffer: Buffer, obj: any, filePath: string): void {
-  // Ensure the directory exists
-  const excelPath = `${filePath + generateFileName('excel')}.xlsx`;
-  const dir = path.dirname(excelPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+// function storeBufferAndObject(buffer: Buffer, obj: any, filePath: string): void {
+//   // Ensure the directory exists
+//   const excelPath = `${filePath + generateFileName('excel')}.xlsx`;
+//   const dir = path.dirname(excelPath);
+//   if (!fs.existsSync(dir)) {
+//     fs.mkdirSync(dir, { recursive: true });
+//   }
 
-  // Write the buffer to the specified file path
-  fs.writeFileSync(excelPath, buffer);
+//   // Write the buffer to the specified file path
+//   fs.writeFileSync(excelPath, buffer);
 
-  // Write the object to a JSON file in the same directory
-  const objFilePath = `${filePath + generateFileName('json')}.json`;
-  fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
-}
+//   // Write the object to a JSON file in the same directory
+//   const objFilePath = `${filePath + generateFileName('json')}.json`;
+//   fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
+// }
 
 function isSubstringInArray(substring: string, array: string[]): boolean {
   for (const str of array) {
@@ -155,6 +153,9 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       for (const order of orders) {
         const orderId = order.sub_order_no_.replace(/\r\n/g, '');
         console.log('orderId', orderId, 'typeof', typeof orderId);
+
+        if (!orderId?.trim()) continue;
+
         const findOrderData = await Order.findOne({ sub_order_no: orderId || '' });
         console.log('findOrderData', findOrderData);
         if (!findOrderData) {
@@ -180,9 +181,9 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       }
     }
     // const sheetData = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[1]], { header: 2, range: 1 });
-    const removeNewlinesFromJsonData = jsonCleaner(extractSheetData);
+    // const removeNewlinesFromJsonData = jsonCleaner(extractSheetData);
     await Order.bulkWrite(orderDetails);
-    storeBufferAndObject(excelFile, { removeNewlinesFromJsonData, orderDetails }, 'demoUpload');
+    // storeBufferAndObject(excelFile, { removeNewlinesFromJsonData, orderDetails }, 'demoUpload');
     return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
     console.log('error', error);
