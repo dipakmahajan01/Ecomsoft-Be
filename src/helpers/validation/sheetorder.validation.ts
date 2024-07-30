@@ -6,3 +6,7 @@ export const returnOrderSchema = Joi.object({
   status: Joi.string().allow('').optional(),
   is_order_issue: Joi.string().allow('').optional(),
 });
+
+export const getAnalyticsSchema = Joi.object({
+  account_id: Joi.string().required(),
+});
