@@ -297,7 +297,9 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
           $set: {
             order_status: status,
             order_price: String(paymentOrderObj.finalSettlementAmount),
-            issue_message: 'The payment is done but product is pending delivery to your company.',
+            issue_message:
+              status === 'completed' ? '' : 'The payment is done but product is pending delivery to your company',
+            is_return_update: status === 'completed',
           },
         },
       );
