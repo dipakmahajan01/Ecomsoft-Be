@@ -225,8 +225,11 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     }
     if (status === 'completed') {
       where.order_status = status;
-    } else if (status === 'customerReturn' || status === 'currierReturn') {
+    }
+    if (status === 'customerReturn' || status === 'currierReturn') {
       where.order_status = status;
+    } else {
+      where.order_status = { $in: ['customerReturn', 'currierReturn'] };
     }
     const matchStage = { $match: where };
     const returnOrderDetail = await Order.aggregate([matchStage]);
