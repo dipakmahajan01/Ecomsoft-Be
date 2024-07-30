@@ -204,6 +204,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
 
     if (isReturnUpdate) {
       where.is_return_update = isReturnUpdate === 'true';
+      where.status = { $ne: 'completed' };
     }
 
     if (accountId !== 'all') {
@@ -225,11 +226,8 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     }
     if (status === 'completed') {
       where.order_status = status;
-    }
-    if (status === 'customerReturn' || status === 'currierReturn') {
+    } else if (status === 'customerReturn' || status === 'currierReturn') {
       where.order_status = status;
-    } else {
-      where.order_status = { $in: ['customerReturn', 'currierReturn'] };
     }
     const matchStage = { $match: where };
     const returnOrderDetail = await Order.aggregate([matchStage]);
