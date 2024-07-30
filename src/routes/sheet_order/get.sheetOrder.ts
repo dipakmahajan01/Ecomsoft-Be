@@ -264,7 +264,7 @@ export const getAnalyticsHandler = async (req: Request, res: Response) => {
       {
         $group: {
           _id: null,
-          totalOrder: { $sum: 1 },
+          totalOrder: { $sum: { $cond: { if: { $eq: ['$is_return_update', false] }, then: 1, else: 0 } } },
           totalReturn: {
             $sum: {
               $cond: { if: { $eq: ['$is_return_update', true] }, then: 1, else: 0 },

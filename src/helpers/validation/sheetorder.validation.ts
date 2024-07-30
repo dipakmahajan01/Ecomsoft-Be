@@ -10,3 +10,7 @@ export const returnOrderSchema = Joi.object({
 export const getAnalyticsSchema = Joi.object({
   account_id: Joi.string().required(),
 });
+
+export const updateReturnOrderSchema = Joi.object({
+  order_id: Joi.string().required(),
+});
