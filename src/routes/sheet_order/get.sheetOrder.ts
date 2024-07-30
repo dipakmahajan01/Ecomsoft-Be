@@ -202,11 +202,6 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     const tokenData = (await (req.headers as any).tokenData) as ITokenData;
     const where: any = {};
 
-    if (isReturnUpdate) {
-      where.is_return_update = isReturnUpdate === 'true';
-      where.status = { $ne: 'completed' };
-    }
-
     if (accountId !== 'all') {
       const accountDetails = await sellerAccounts.findOne({ platform_id: accountId });
       if (!accountDetails) {
@@ -221,14 +216,31 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
         ?.distinct('platform_id');
       where.account_id = { $in: accountIds };
     }
-    if (isOrderIssue) {
-      where.is_order_issue = isOrderIssue === 'true';
-    }
-    if (status === 'completed') {
-      where.order_status = status;
-    } else if (status === 'customerReturn' || status === 'currierReturn') {
-      where.order_status = status;
-    }
+
+    (() => {
+      if (isReturnUpdate) {
+        where.is_return_update = isReturnUpdate === 'true';
+
+        if (where.is_return_update) {
+          if (status) {
+            where.order_status = status;
+          }
+        } else {
+          where.order_status = { $nin: ['completed', 'customerReturn', 'currierReturn'] };
+        }
+        return;
+      }
+
+      if (isOrderIssue) {
+        where.is_order_issue = isOrderIssue === 'true';
+        return;
+      }
+
+      if (status === 'completed') {
+        where.order_status = status;
+      }
+    })();
+
     const matchStage = { $match: where };
     const returnOrderDetail = await Order.aggregate([matchStage]);
 
