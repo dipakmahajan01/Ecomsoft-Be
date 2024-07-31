@@ -219,7 +219,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       if (data[0]) continue;
       console.log('data', data['Dispatch Date']);
       const paymentOrderObj = {
-        subOrderNo: data['Sub Order No'],
+        subOrderNo: data['Sub Order No']?.trim(),
         orderDate: !data['Order Date'] ? null : convertIntoUnix(data['Order Date'])?.toString(),
         dispatchDate: !data['Dispatch Date'] ? null : convertIntoUnix(data['Dispatch Date'])?.toString(),
         productName: data['Product Name'],
@@ -288,18 +288,17 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         status = 'cancelled';
       }
       await Order.findOneAndUpdate(
-        { sub_order_no: data['Sub Order No'], is_return_update: true },
+        { sub_order_no: data['Sub Order No']?.trim(), is_return_update: true },
         { $set: { order_status: status, order_price: String(paymentOrderObj.finalSettlementAmount) } },
       );
       await Order.findOneAndUpdate(
-        { sub_order_no: data['Sub Order No'], is_return_update: false },
+        { sub_order_no: data['Sub Order No']?.trim(), is_return_update: false },
         {
           $set: {
             order_status: status,
             order_price: String(paymentOrderObj.finalSettlementAmount),
             issue_message:
               status === 'completed' ? '' : 'The payment is done but product is pending delivery to your company',
-            is_return_update: status === 'completed',
           },
         },
       );
