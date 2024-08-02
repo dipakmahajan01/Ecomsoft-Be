@@ -58,7 +58,7 @@ interface IOrder extends Document {
 
 // Create the schema
 const paymentOrderSchema: Schema = new Schema({
-  subOrderNo: { type: String, unique: true },
+  subOrderNo: { type: String },
   orderDate: { type: String },
   dispatchDate: { type: String },
   productName: { type: String },
