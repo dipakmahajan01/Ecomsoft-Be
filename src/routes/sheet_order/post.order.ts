@@ -4,13 +4,14 @@
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
+import { convertDateToUnix, convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
 import sellerAccounts from '../../model/seller_accounts.model';
 import Order from '../../model/sheet_order.model';
 import PaymentOrders from '../../model/payment_order.model';
 import { convertPdfToExcel, getExcelFileByUrl } from '../../helpers/excel/convertPdfToExcel';
+import ReturnOrder from '../../model/return_order.model';
 
 const API_KEY = process.env.PDF_REST_API_KEY;
 
@@ -56,7 +57,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     const fileLocation: any = req.file.buffer;
     const { account_name: accountName } = req.body;
 
-    const sellerAccount = await sellerAccounts.findOne({ account_name: accountName });
+    let sellerAccount: any = await sellerAccounts.findOne({ account_name: accountName });
     if (!sellerAccount) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -95,13 +96,19 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       parsedData['Courier'] = courierInfo[1]?.trim();
       parsedData['Supplier Name'] = supplierName;
       parsedData['date'] = date;
+      sellerAccount.sheet_account_name = supplierName.trim().split(' ').join('').toLowerCase().toLowerCase();
 
+      await sellerAccount.save();
       const accountDetails = await sellerAccounts.findOne({
-        account_name: parsedData['Supplier Name'],
+        sheet_account_name:
+          sellerAccount.account_name.trim().split(' ').join('').toLowerCase() ===
+          supplierName.trim().split(' ').join('').toLowerCase().toLowerCase()
+            ? supplierName.trim().split(' ').join('').toLowerCase().toLowerCase()
+            : '',
       });
       const accountId: any = accountDetails?.platform_id;
 
-      if (sellerAccount.platform_id === accountId) {
+      if (sellerAccount.platform_id !== accountId) {
         return res
           .status(StatusCodes.BAD_REQUEST)
           .send(
@@ -165,7 +172,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
             sku: order.sku,
             qty: order.qty_,
             size: order.size,
-            courier: order.courier,
+            pickup_courier_partner: order.courier,
             order_date: order.date,
             supplier_name: order.supplier_name,
             account_id: sellerAccount.platform_id,
@@ -196,7 +203,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
   try {
     const fileLocation: any = req.file.buffer;
     const { account_name: accountName } = req.body;
-    const accountDetails = await sellerAccounts.findOne({ account_name: accountName });
+    const accountDetails: any = await sellerAccounts.findOne({ account_name: accountName }).lean();
     if (!accountDetails) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -218,7 +225,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
     for (const data of orderDetails) {
       if (data[0]) continue;
       console.log('data', data['Dispatch Date']);
-      const paymentOrderObj = {
+      const paymentOrderObj: any = {
         subOrderNo: data['Sub Order No']?.trim(),
         orderDate: !data['Order Date'] ? null : convertIntoUnix(data['Order Date'])?.toString(),
         dispatchDate: !data['Dispatch Date'] ? null : convertIntoUnix(data['Dispatch Date'])?.toString(),
@@ -287,6 +294,25 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       if (paymentOrderObj.liveOrderStatus === 'Cancelled') {
         status = 'cancelled';
       }
+      const findOrderData = await Order.findOne({ sub_order_no: paymentOrderObj.subOrderNo });
+      if (!findOrderData) {
+        await Order.create({
+          order_id: generatePublicId(),
+          sub_order_no: paymentOrderObj.subOrderNo,
+          awb: paymentOrderObj.awb_number,
+          sku: paymentOrderObj.sku,
+          qty: paymentOrderObj.Qty,
+          size: '',
+          pickup_courier_partner: paymentOrderObj.courier_partner,
+          order_date: paymentOrderObj.orderDate,
+          supplier_name: accountDetails.account_name,
+          account_id: accountDetails.platform_id,
+          created_at: convertDateToUnix(paymentOrderObj.order_date),
+          status,
+          is_return_updated: true,
+          is_order_issue: false,
+        });
+      }
       await Order.findOneAndUpdate(
         { sub_order_no: data['Sub Order No']?.trim(), is_return_update: true },
         { $set: { order_status: status, order_price: String(paymentOrderObj.finalSettlementAmount) } },
@@ -313,6 +339,83 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
     return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
     console.log('error', error);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, false));
+  }
+};
+export const returnOrder = async (req: Request, res: Response) => {
+  try {
+    const fileLocation: any = req.file.buffer;
+    const { account_name: accountName } = req.body;
+    const accountDetails: any = await sellerAccounts.findOne({ account_name: accountName });
+    if (!accountDetails) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
+    }
+    const file = XLSX.read(fileLocation);
+    const sheetNameList: any = file.SheetNames;
+    const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], { header: 7, range: 7 });
+    const orderD = [];
+    for (const order of orderDetails) {
+      const findOrderData = await ReturnOrder.findOne({ suborder_number: order['Suborder Number'] }, {});
+      if (!findOrderData) {
+        const orderInsertData = {
+          return_order_id: generatePublicId(),
+          product_name: order['Product Name'],
+          sku: order['SKU'],
+          variation: order['Variation'],
+          meesho_pid: order['Meesho PID'],
+          Qty: order['Qty'],
+          category: order['Order Number'],
+          order_number: order['Order Number'],
+          suborder_number: order['Suborder Number'],
+          order_date: order['Order Date'],
+          dispatch_date: order['Dispatch Date'],
+          return_created_date: order['Return Created Date'],
+          type_of_return: order['Type of Return'],
+          sub_type: order['Sub Type'],
+          expected_delivery_date: order['Expected Delivery Date'],
+          courier_partner: order['Courier Partner'],
+          awb_number: order['AWB Number'],
+          status: order['Status'],
+          attempt: order['Attempt'],
+          tracking_link: order['Tracking Link'],
+          return_reason: order['Return Reason'],
+          detailed_return_reason: order['Detailed Return Reason'],
+          created_at: setTimesTamp(),
+        };
+        const findOrderData = await Order.findOne({ sub_order_no: orderInsertData.suborder_number });
+        if (!findOrderData) {
+          await Order.create({
+            order_id: generatePublicId(),
+            sub_order_no: orderInsertData.suborder_number,
+            awb: orderInsertData.awb_number,
+            sku: orderInsertData.sku,
+            qty: orderInsertData.Qty,
+            size: '',
+            pickup_courier_partner: orderInsertData.courier_partner,
+            order_date: orderInsertData.order_date,
+            supplier_name: accountDetails.account_name,
+            account_id: accountDetails.platform_id,
+            created_at: convertDateToUnix(orderInsertData.order_date),
+            status: orderInsertData.type_of_return === 'Courier Return (RTO)' ? 'currierReturn' : 'customerReturn',
+            is_return_update: true,
+            is_order_issue: false,
+          });
+        }
+        await Order.findOneAndUpdate(
+          { sub_order_no: orderInsertData.suborder_number },
+          { $set: { awb_number: orderInsertData.awb_number, return_currier_partner: orderInsertData.courier_partner } },
+        );
+
+        orderD.push(orderInsertData);
+      }
+    }
+    const data = await ReturnOrder.insertMany(orderD);
+    return res.status(StatusCodes.OK).send(responseGenerators(data, StatusCodes.OK, ORDER.CREATED, false));
+  } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, false));

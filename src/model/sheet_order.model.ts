@@ -7,7 +7,7 @@ const orderSchema = new Schema({
   sku: { type: String },
   qty: { type: Number },
   size: { type: String },
-  courier: { type: String },
+  pickup_courier_partner: { type: String },
   order_date: { type: String },
   order_price: { type: String },
   supplier_name: { type: String },
@@ -19,6 +19,8 @@ const orderSchema = new Schema({
   is_order_issue: { type: Boolean, default: false },
   issue_message: { type: String },
   updated_at: { type: String },
+  awb_number: { type: String },
+  return_currier_partner: { type: String },
 });
 
 // Create the model

@@ -17,6 +17,7 @@ const sellerAccount = new Schema({
   market_place_name: { type: String },
   user_id: { type: String },
   account_name: { type: String },
+  sheet_account_name: { type: String },
   is_deleted: { type: Boolean, default: false },
   created_at: { type: String },
   updated_at: { type: String },
