@@ -2,9 +2,7 @@
 /* eslint-disable @typescript-eslint/dot-notation */
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
-import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
-import path from 'path';
 import { convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
@@ -16,33 +14,33 @@ import { storeFile } from '../../firebase';
 
 const API_KEY = process.env.PDF_REST_API_KEY;
 
-function generateFileName(baseName: string): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
+// function generateFileName(baseName: string): string {
+//   const now = new Date();
+//   const year = now.getFullYear();
+//   const month = String(now.getMonth() + 1).padStart(2, '0');
+//   const day = String(now.getDate()).padStart(2, '0');
+//   const hours = String(now.getHours()).padStart(2, '0');
+//   const minutes = String(now.getMinutes()).padStart(2, '0');
+//   const seconds = String(now.getSeconds()).padStart(2, '0');
 
-  return `${baseName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
-}
+//   return `${baseName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+// }
 
-function storeBufferAndObject(buffer: Buffer, obj: any, filePath: string): void {
-  // Ensure the directory exists
-  const excelPath = `${filePath + generateFileName('excel')}.xlsx`;
-  const dir = path.dirname(excelPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+// function storeBufferAndObject(buffer: Buffer, obj: any, filePath: string): void {
+//   // Ensure the directory exists
+//   const excelPath = `${filePath + generateFileName('excel')}.xlsx`;
+//   const dir = path.dirname(excelPath);
+//   if (!fs.existsSync(dir)) {
+//     fs.mkdirSync(dir, { recursive: true });
+//   }
 
-  // Write the buffer to the specified file path
-  fs.writeFileSync(excelPath, buffer);
+//   // Write the buffer to the specified file path
+//   fs.writeFileSync(excelPath, buffer);
 
-  // Write the object to a JSON file in the same directory
-  const objFilePath = `${filePath + generateFileName('json')}.json`;
-  fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
-}
+//   // Write the object to a JSON file in the same directory
+//   const objFilePath = `${filePath + generateFileName('json')}.json`;
+//   fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
+// }
 
 function isSubstringInArray(substring: string, array: string[]): boolean {
   for (const str of array) {
@@ -77,10 +75,11 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     }
     const excelFile = await getExcelFileByUrl(data.outputUrl);
 
+    const sheetId = generatePublicId();
     try {
       await storeFile({
         file: excelFile,
-        fileName: `${generateFileName(accountName)}.xlsx`,
+        fileName: `${accountName}_${sheetId}.xlsx`,
         contentType: 'auto',
         location: 'orders',
       });
@@ -118,6 +117,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       parsedData['Courier'] = courierInfo?.trim();
       parsedData['Supplier Name'] = supplierName?.trim();
       parsedData['date'] = convertIntoUnix(date);
+      parsedData.sheet_id = sheetId;
 
       const accountDetails = await sellerAccounts.findOne({
         account_name: parsedData['Supplier Name'],
@@ -193,6 +193,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
             supplier_name: order.supplier_name,
             account_id: sellerAccount.platform_id,
             created_at: setTimesTamp(),
+            sheetId: order.sheet_id,
           };
           orderDetails.push({
             insertOne: {
@@ -203,9 +204,9 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       }
     }
     // const sheetData = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[1]], { header: 2, range: 1 });
-    const removeNewlinesFromJsonData = jsonCleaner(extractSheetData);
+    // const removeNewlinesFromJsonData = jsonCleaner(extractSheetData);
     await Order.bulkWrite(orderDetails);
-    storeBufferAndObject(excelFile, { removeNewlinesFromJsonData, orderDetails }, 'demoUpload');
+    // storeBufferAndObject(excelFile, { removeNewlinesFromJsonData, orderDetails }, 'demoUpload');
     return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -227,10 +228,11 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
     }
 
+    const sheetId = generatePublicId();
     try {
       await storeFile({
         file: fileLocation,
-        fileName: `${generateFileName(accountName)}.xlsx`,
+        fileName: `${accountName}_${sheetId}.xlsx`,
         contentType: 'auto',
         location: 'orders',
       });
@@ -306,6 +308,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         compensationReason: data['Compensation Reason'],
         claimsReason: data['Claims Reason'],
         recoveryReason: data['Recovery Reason'],
+        sheetId,
       };
       let status = 'completed';
       if (paymentOrderObj.liveOrderStatus === 'RTO' || paymentOrderData?.finalSettlementAmount === 0.0) {
