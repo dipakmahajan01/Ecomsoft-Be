@@ -253,7 +253,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
   }
 };
 
-export const getAnalyticsHandler = async (req: Request, res: Response) => {
+export const getOrderCountHandler = async (req: Request, res: Response) => {
   try {
     await getAnalyticsSchema.validateAsync(req.query);
     const tokenData = (req.headers as any).tokenData as ITokenData;
