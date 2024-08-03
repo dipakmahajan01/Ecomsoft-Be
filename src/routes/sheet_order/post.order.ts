@@ -1,6 +1,5 @@
 /* eslint-disable no-continue */
 /* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable no-console */
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import fs from 'fs';
@@ -13,6 +12,7 @@ import sellerAccounts from '../../model/seller_accounts.model';
 import Order from '../../model/sheet_order.model';
 import PaymentOrders from '../../model/payment_order.model';
 import { convertPdfToExcel, getExcelFileByUrl } from '../../helpers/excel/convertPdfToExcel';
+import { storeFile } from '../../firebase';
 
 const API_KEY = process.env.PDF_REST_API_KEY;
 
@@ -77,6 +77,18 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     }
     const excelFile = await getExcelFileByUrl(data.outputUrl);
 
+    try {
+      await storeFile({
+        file: excelFile,
+        fileName: `${generateFileName(accountName)}.xlsx`,
+        contentType: 'auto',
+        location: 'orders',
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+
     const file = XLSX.read(excelFile);
     const sheetNameList = file.SheetNames;
     let orders = [];
@@ -90,7 +102,6 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       const headerSheet = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 1, range: 0 });
 
       let dataStr: any = headerSheet[0];
-      console.log('dataStr', dataStr);
       if (isSubstringInArray('Picklist', dataStr)) continue;
 
       const detailsContainerString = dataStr.join('\n');
@@ -197,6 +208,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     storeBufferAndObject(excelFile, { removeNewlinesFromJsonData, orderDetails }, 'demoUpload');
     return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.log('error', error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -214,6 +226,19 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         .status(StatusCodes.NOT_FOUND)
         .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
     }
+
+    try {
+      await storeFile({
+        file: fileLocation,
+        fileName: `${generateFileName(accountName)}.xlsx`,
+        contentType: 'auto',
+        location: 'orders',
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+
     const file = XLSX.read(fileLocation);
     const sheetNameList: any = file.SheetNames;
     const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], {
@@ -229,7 +254,6 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
     }
     for (const data of orderDetails) {
       if (data[0]) continue;
-      console.log('data', data['Dispatch Date']);
       const paymentOrderObj = {
         subOrderNo: data['Sub Order No']?.trim(),
         orderDate: !data['Order Date'] ? null : convertIntoUnix(data['Order Date'])?.toString(),
@@ -324,6 +348,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
     await PaymentOrders.bulkWrite(orderD);
     return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.log('error', error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
