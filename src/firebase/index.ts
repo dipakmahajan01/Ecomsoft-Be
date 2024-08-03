@@ -23,7 +23,7 @@ export const initializeFirebase = () => {
     storageBucket: 'gs://aumsoft-b52bd.appspot.com',
   });
   // eslint-disable-next-line no-console
-  console.time(`⚡️ ######################## Firebase connected 👍🏼 ##############`);
+  console.info(`⚡️ ######################## Firebase connected 👍🏼 ##############`);
   bucket = admin.storage().bucket();
 };
 

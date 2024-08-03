@@ -19,6 +19,7 @@ const orderSchema = new Schema({
   is_order_issue: { type: Boolean, default: false },
   issue_message: { type: String },
   updated_at: { type: String },
+  sheetId: { type: String },
 });
 
 // Create the model
