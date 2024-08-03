@@ -5,6 +5,7 @@ import { logsError, responseGenerators } from '../../lib';
 import sellerAccounts from '../../model/seller_accounts.model';
 import Order from '../../model/sheet_order.model';
 import { getAnalyticsSchema, returnOrderSchema } from '../../helpers/validation/sheetorder.validation';
+import { setPagination } from '../../common/common-function';
 
 // export const getSheetOrderHandler = async (req: Request, res: Response) => {
 //   try {
@@ -195,9 +196,15 @@ import { getAnalyticsSchema, returnOrderSchema } from '../../helpers/validation/
 //   }
 // };
 
+const DEFAULT_LIMIT = 10;
 export const returnOrderHandler = async (req: Request, res: Response) => {
   try {
-    await returnOrderSchema.validateAsync(req.query);
+    const { error } = returnOrderSchema.validate(req.query);
+    if (error) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, true));
+    }
     const { account_id: accountId, status, is_return_update: isReturnUpdate, is_order_issue: isOrderIssue } = req.query;
     const tokenData = (await (req.headers as any).tokenData) as ITokenData;
     const where: any = {};
@@ -242,7 +249,34 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     })();
 
     const matchStage = { $match: where };
-    const returnOrderDetail = await Order.aggregate([matchStage]);
+    const pagination = await setPagination({
+      sort_column: 'order_date',
+      sort_order: 'dec',
+      limit: req.query?.limit ?? DEFAULT_LIMIT,
+      offset: req.query?.offset,
+    });
+
+    const pipeline = [matchStage, { $sort: pagination.sort }];
+
+    const aggregatePipeline = [
+      {
+        $facet: {
+          totalCount: [...pipeline, { $count: 'count' }],
+          orders: [...pipeline, { $skip: pagination.offset }, { $limit: pagination.limit }],
+        },
+      },
+      {
+        $project: {
+          totalCount: { $arrayElemAt: ['$totalCount.count', 0] },
+          orders: 1,
+        },
+      },
+    ];
+
+    const [returnOrderDetail] = await Order.aggregate(aggregatePipeline);
+    const limit = Number(req.query?.limit) || DEFAULT_LIMIT;
+    returnOrderDetail.pageCount = Math.round(returnOrderDetail.totalCount / limit);
+    // const totalDocuments = await Order.count(aggregatePipeline);
 
     return res.status(StatusCodes.OK).send(responseGenerators(returnOrderDetail, StatusCodes.OK, ORDER.FOUND, false));
   } catch (error) {
