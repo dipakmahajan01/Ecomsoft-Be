@@ -110,6 +110,7 @@ export const setPagination = async (options) => {
     const sortColumn = options.sort_column;
     const order = options?.sort_order === 'asc' ? 1 : -1;
     sort[sortColumn] = order;
+    sort.created_at = order;
   } else {
     sort.created_at = -1;
   }

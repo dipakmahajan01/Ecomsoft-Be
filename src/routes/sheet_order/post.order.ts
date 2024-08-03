@@ -3,7 +3,9 @@
 /* eslint-disable no-console */
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
+import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
+import path from 'path';
 import { convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
@@ -14,33 +16,33 @@ import { convertPdfToExcel, getExcelFileByUrl } from '../../helpers/excel/conver
 
 const API_KEY = process.env.PDF_REST_API_KEY;
 
-// function generateFileName(baseName: string): string {
-//   const now = new Date();
-//   const year = now.getFullYear();
-//   const month = String(now.getMonth() + 1).padStart(2, '0');
-//   const day = String(now.getDate()).padStart(2, '0');
-//   const hours = String(now.getHours()).padStart(2, '0');
-//   const minutes = String(now.getMinutes()).padStart(2, '0');
-//   const seconds = String(now.getSeconds()).padStart(2, '0');
+function generateFileName(baseName: string): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
 
-//   return `${baseName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
-// }
+  return `${baseName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+}
 
-// function storeBufferAndObject(buffer: Buffer, obj: any, filePath: string): void {
-//   // Ensure the directory exists
-//   const excelPath = `${filePath + generateFileName('excel')}.xlsx`;
-//   const dir = path.dirname(excelPath);
-//   if (!fs.existsSync(dir)) {
-//     fs.mkdirSync(dir, { recursive: true });
-//   }
+function storeBufferAndObject(buffer: Buffer, obj: any, filePath: string): void {
+  // Ensure the directory exists
+  const excelPath = `${filePath + generateFileName('excel')}.xlsx`;
+  const dir = path.dirname(excelPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 
-//   // Write the buffer to the specified file path
-//   fs.writeFileSync(excelPath, buffer);
+  // Write the buffer to the specified file path
+  fs.writeFileSync(excelPath, buffer);
 
-//   // Write the object to a JSON file in the same directory
-//   const objFilePath = `${filePath + generateFileName('json')}.json`;
-//   fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
-// }
+  // Write the object to a JSON file in the same directory
+  const objFilePath = `${filePath + generateFileName('json')}.json`;
+  fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
+}
 
 function isSubstringInArray(substring: string, array: string[]): boolean {
   for (const str of array) {
@@ -49,6 +51,12 @@ function isSubstringInArray(substring: string, array: string[]): boolean {
     }
   }
   return false;
+}
+
+function extractValueByKey(input, key) {
+  const regex = new RegExp(`${key}\\s*:\\s*([^\\n]*)`, 'i');
+  const match = input?.match(regex);
+  return match ? match[1].trim() : null;
 }
 
 export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
@@ -85,16 +93,20 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       console.log('dataStr', dataStr);
       if (isSubstringInArray('Picklist', dataStr)) continue;
 
-      let lines = dataStr[0].split('\n');
-      let courierInfo = lines[0]?.split(':');
-      let supplierDateInfo = lines[1]?.split('Date :');
-      // TODO :- Undidine error, Need to handle the undifined data and parse properly.
-      let supplierName = supplierDateInfo[0]?.split(':')[1]?.trim();
-      let date = supplierDateInfo[1]?.trim();
+      const detailsContainerString = dataStr.join('\n');
+      // let lines = dataStr[0].split('\n');
+      // let courierInfo = lines[0]?.split(':');
+      // let supplierDateInfo = lines[1]?.split('Date :');
+      // // TODO :- Undidine error, Need to handle the undifined data and parse properly.
+      // let supplierName = supplierDateInfo[0]?.split(':')[1]?.trim();
+      // let date = supplierDateInfo[1]?.trim();
+      const supplierName = extractValueByKey(detailsContainerString, 'Supplier Name');
+      const date = extractValueByKey(detailsContainerString, 'Date');
+      const courierInfo = extractValueByKey(detailsContainerString, 'Courier');
 
-      parsedData['Courier'] = courierInfo[1]?.trim();
-      parsedData['Supplier Name'] = supplierName;
-      parsedData['date'] = date;
+      parsedData['Courier'] = courierInfo?.trim();
+      parsedData['Supplier Name'] = supplierName?.trim();
+      parsedData['date'] = convertIntoUnix(date);
 
       const accountDetails = await sellerAccounts.findOne({
         account_name: parsedData['Supplier Name'],
@@ -180,9 +192,9 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       }
     }
     // const sheetData = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[1]], { header: 2, range: 1 });
-    // const removeNewlinesFromJsonData = jsonCleaner(extractSheetData);
+    const removeNewlinesFromJsonData = jsonCleaner(extractSheetData);
     await Order.bulkWrite(orderDetails);
-    // storeBufferAndObject(excelFile, { removeNewlinesFromJsonData, orderDetails }, 'demoUpload');
+    storeBufferAndObject(excelFile, { removeNewlinesFromJsonData, orderDetails }, 'demoUpload');
     return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
     console.log('error', error);
