@@ -339,7 +339,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
           sub_order_no: paymentOrderObj?.subOrderNo,
           awb: paymentOrderObj?.awb_number,
           sku: paymentOrderObj?.supplierSKU,
-          qty: paymentOrderObj?.quantity,
+          qty: parseInt(paymentOrderObj?.quantity, 10),
           size: '',
           price: parseFloat(data['Final Settlement Amount']),
           pickup_courier_partner: paymentOrderObj?.courier_partner,
