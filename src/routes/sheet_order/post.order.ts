@@ -234,7 +234,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         file: fileLocation,
         fileName: `${accountName}_${sheetId}.xlsx`,
         contentType: 'auto',
-        location: 'orders',
+        location: 'Payment',
       });
     } catch (error) {
       // eslint-disable-next-line no-console
