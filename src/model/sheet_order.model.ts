@@ -5,7 +5,7 @@ const orderSchema = new Schema({
   order_id: { type: String, unique: true },
   sub_order_no: { type: String, unique: true },
   sku: { type: String },
-  qty: { type: Number },
+  qty: { type: String },
   size: { type: String },
   pickup_courier_partner: { type: String },
   order_date: { type: String },
