@@ -110,6 +110,7 @@ const paymentOrderSchema: Schema = new Schema({
   claimsReason: { type: String },
   recoveryReason: { type: String },
   created_at: { type: String },
+  sheetId: { type: String },
 });
 
 // Create the model

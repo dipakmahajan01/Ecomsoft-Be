@@ -21,6 +21,7 @@ const orderSchema = new Schema({
   updated_at: { type: String },
   awb_number: { type: String },
   return_currier_partner: { type: String },
+  sheetId: { type: String },
 });
 
 // Create the model
