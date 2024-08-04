@@ -298,16 +298,16 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       if (!findOrderData) {
         await Order.create({
           order_id: generatePublicId(),
-          sub_order_no: paymentOrderObj.subOrderNo,
-          awb: paymentOrderObj.awb_number,
-          sku: paymentOrderObj.sku,
-          qty: paymentOrderObj.Qty,
+          sub_order_no: paymentOrderObj?.subOrderNo,
+          awb: paymentOrderObj?.awb_number,
+          sku: paymentOrderObj?.sku,
+          qty: paymentOrderObj?.Qty,
           size: '',
-          pickup_courier_partner: paymentOrderObj.courier_partner,
-          order_date: paymentOrderObj.orderDate,
-          supplier_name: accountDetails.account_name,
-          account_id: accountDetails.platform_id,
-          created_at: convertDateToUnix(paymentOrderObj.order_date),
+          pickup_courier_partner: paymentOrderObj?.courier_partner,
+          order_date: paymentOrderObj?.orderDate,
+          supplier_name: accountDetails?.account_name,
+          account_id: accountDetails?.platform_id,
+          created_at: convertDateToUnix(paymentOrderObj?.order_date),
           status,
           is_return_updated: true,
           is_order_issue: false,
@@ -356,10 +356,19 @@ export const returnOrder = async (req: Request, res: Response) => {
     }
     const file = XLSX.read(fileLocation);
     const sheetNameList: any = file.SheetNames;
-    const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], { header: 7, range: 7 });
+    const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]]);
+    let headerRange: number;
+    for (let index = 0; index < orderDetails.length; index += 1) {
+      const element = orderDetails[index]['Meesho Supplier Panel'] === 1 || orderDetails[index]['__EMPTY'] === 1;
+      if (element) {
+        headerRange = index + 1;
+        break;
+      }
+    }
+    const orders = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], { header: headerRange, range: headerRange });
     const orderD = [];
-    for (const order of orderDetails) {
-      const findOrderData = await ReturnOrder.findOne({ suborder_number: order['Suborder Number'] }, {});
+    for (const order of orders) {
+      const findOrderData = await ReturnOrder.findOne({ suborder_number: order['Suborder Number'] });
       if (!findOrderData) {
         const orderInsertData = {
           return_order_id: generatePublicId(),
@@ -396,18 +405,26 @@ export const returnOrder = async (req: Request, res: Response) => {
             qty: orderInsertData.Qty,
             size: '',
             pickup_courier_partner: orderInsertData.courier_partner,
-            order_date: orderInsertData.order_date,
+            order_date: convertDateToUnix(orderInsertData.order_date),
             supplier_name: accountDetails.account_name,
             account_id: accountDetails.platform_id,
-            created_at: convertDateToUnix(orderInsertData.order_date),
-            status: orderInsertData.type_of_return === 'Courier Return (RTO)' ? 'currierReturn' : 'customerReturn',
+            created_at: setTimesTamp(),
+            order_status:
+              orderInsertData.type_of_return === 'Courier Return (RTO)' ? 'currierReturn' : 'customerReturn',
             is_return_update: true,
             is_order_issue: false,
           });
         }
         await Order.findOneAndUpdate(
           { sub_order_no: orderInsertData.suborder_number },
-          { $set: { awb_number: orderInsertData.awb_number, return_currier_partner: orderInsertData.courier_partner } },
+          {
+            $set: {
+              awb_number: orderInsertData.awb_number,
+              order_status:
+                orderInsertData.type_of_return === 'Courier Return (RTO)' ? 'currierReturn' : 'customerReturn',
+              return_currier_partner: orderInsertData.courier_partner,
+            },
+          },
         );
 
         orderD.push(orderInsertData);
