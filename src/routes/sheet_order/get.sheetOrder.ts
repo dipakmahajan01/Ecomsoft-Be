@@ -275,7 +275,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
 
     const [returnOrderDetail] = await Order.aggregate(aggregatePipeline);
     const limit = Number(req.query?.limit) || DEFAULT_LIMIT;
-    returnOrderDetail.pageCount = Math.round(returnOrderDetail.totalCount / limit);
+    returnOrderDetail.pageCount = Math.ceil(returnOrderDetail.totalCount / limit);
     // const totalDocuments = await Order.count(aggregatePipeline);
 
     return res.status(StatusCodes.OK).send(responseGenerators(returnOrderDetail, StatusCodes.OK, ORDER.FOUND, false));
