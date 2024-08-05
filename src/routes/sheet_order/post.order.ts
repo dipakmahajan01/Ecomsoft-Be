@@ -261,7 +261,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         .send(responseGenerators({}, StatusCodes.OK, 'payment sheet already added', true));
     }
     for (const data of orderDetails) {
-      if (data[0]) continue;
+      if (!data['Sub Order No']) continue;
       const paymentOrderObj: any = {
         subOrderNo: data['Sub Order No']?.trim(),
         orderDate: !data['Order Date'] ? null : convertIntoUnix(data['Order Date'])?.toString(),
@@ -348,7 +348,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
           account_id: accountDetails?.platform_id,
           created_at: convertDateToUnix(paymentOrderObj?.order_date),
           order_status: status,
-          is_return_updated: true,
+          is_return_update: true,
           is_order_issue: false,
         });
       }
