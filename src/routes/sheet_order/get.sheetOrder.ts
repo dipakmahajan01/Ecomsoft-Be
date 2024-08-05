@@ -196,7 +196,6 @@ import { setPagination } from '../../common/common-function';
 //   }
 // };
 
-const DEFAULT_LIMIT = 10;
 export const returnOrderHandler = async (req: Request, res: Response) => {
   try {
     const { error } = returnOrderSchema.validate(req.query);
@@ -247,38 +246,20 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
         where.order_status = status;
       }
     })();
+    const pagination = await setPagination(req.query);
+    const returnOrderDetail = await Order.find(where)
+      .limit(pagination.limit + pagination.offset)
+      .skip(pagination.offset)
+      .sort({ created_at: -1 });
+    const returnOrderCount = await Order.count(where);
+    const data: any = {
+      count: returnOrderCount,
+      data: returnOrderDetail,
+    };
 
-    const matchStage = { $match: where };
-    const pagination = await setPagination({
-      sort_column: 'order_date',
-      sort_order: 'dec',
-      limit: req.query?.limit ?? DEFAULT_LIMIT,
-      offset: req.query?.offset,
-    });
-
-    const pipeline = [matchStage, { $sort: pagination.sort }];
-
-    const aggregatePipeline = [
-      {
-        $facet: {
-          totalCount: [...pipeline, { $count: 'count' }],
-          orders: [...pipeline, { $skip: pagination.offset }, { $limit: pagination.limit }],
-        },
-      },
-      {
-        $project: {
-          totalCount: { $arrayElemAt: ['$totalCount.count', 0] },
-          orders: 1,
-        },
-      },
-    ];
-
-    const [returnOrderDetail] = await Order.aggregate(aggregatePipeline);
-    const limit = Number(req.query?.limit) || DEFAULT_LIMIT;
-    returnOrderDetail.pageCount = Math.ceil(returnOrderDetail.totalCount / limit);
     // const totalDocuments = await Order.count(aggregatePipeline);
 
-    return res.status(StatusCodes.OK).send(responseGenerators(returnOrderDetail, StatusCodes.OK, ORDER.FOUND, false));
+    return res.status(StatusCodes.OK).send(responseGenerators(data, StatusCodes.OK, ORDER.FOUND, false));
   } catch (error) {
     logsError(error);
     return res
