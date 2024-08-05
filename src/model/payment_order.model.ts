@@ -3,53 +3,53 @@ import mongoose, { Schema, Document } from 'mongoose';
 // Define the interface
 interface IOrder extends Document {
   subOrderNo: string;
-  orderDate: Date;
-  dispatchDate: Date;
+  orderDate: string;
+  dispatchDate: string;
   productName: string;
   supplierSKU: string;
   liveOrderStatus: string;
-  productGSTPercent: number;
-  listingPriceInclGSTAndCommission: number;
-  quantity: number;
+  productGSTPercent: string;
+  listingPriceInclGSTAndCommission: string;
+  quantity: string;
   transactionID: string;
   paymentDate: Date;
   finalSettlementAmount: number;
   priceType: string;
-  totalSaleAmountInclCommissionAndGST: number;
-  saleReturnAmountInclGST: number;
-  fixedFeeInclGST: number;
-  warehousingFeeInclGST: number;
-  shippingRevenueInclGST: number;
-  shippingReturnAmountInclGST: number;
-  returnPremiumInclGST: number;
-  returnPremiumOfReturnInclGST: number;
-  meeshoCommissionPercentage: number;
-  meeshoCommissionExclGST: number;
-  meeshoGoldPlatformFeeExclGST: number;
-  meeshoMallPlatformFeeExclGST: number;
-  fixedFeeExclGST: number;
-  warehousingFeeExclGST: number;
-  returnShippingChargeExclGST: number;
-  gstCompensationPRPShipping: number;
-  shippingChargeExclGST: number;
-  otherSupportServiceChargesExclGST: number;
-  waiversExclGST: number;
-  netOtherSupportServiceChargesExclGST: number;
-  gstOnMeeshoCommission: number;
-  gstOnWarehousingFee: number;
-  gstOnMeeshoGold: number;
-  gstOnMeeshoMallPlatformFee: number;
-  gstOnShippingCharge: number;
-  cgstSGSTOnShippingCharge: number;
-  gstOnReturnShippingCharge: number;
-  gstOnNetOtherSupportServiceCharges: number;
-  gstOnFixedFee: number;
-  tcs: number;
+  totalSaleAmountInclCommissionAndGST: string;
+  saleReturnAmountInclGST: string;
+  fixedFeeInclGST: string;
+  warehousingFeeInclGST: string;
+  shippingRevenueInclGST: string;
+  shippingReturnAmountInclGST: string;
+  returnPremiumInclGST: string;
+  returnPremiumOfReturnInclGST: string;
+  meeshoCommissionPercentage: string;
+  meeshoCommissionExclGST: string;
+  meeshoGoldPlatformFeeExclGST: string;
+  meeshoMallPlatformFeeExclGST: string;
+  fixedFeeExclGST: string;
+  warehousingFeeExclGST: string;
+  returnShippingChargeExclGST: string;
+  gstCompensationPRPShipping: string;
+  shippingChargeExclGST: string;
+  otherSupportServiceChargesExclGST: string;
+  waiversExclGST: string;
+  netOtherSupportServiceChargesExclGST: string;
+  gstOnMeeshoCommission: string;
+  gstOnWarehousingFee: string;
+  gstOnMeeshoGold: string;
+  gstOnMeeshoMallPlatformFee: string;
+  gstOnShippingCharge: string;
+  cgstSGSTOnShippingCharge: string;
+  gstOnReturnShippingCharge: string;
+  gstOnNetOtherSupportServiceCharges: string;
+  gstOnFixedFee: string;
+  tcs: string;
   tdsRatePercent: string;
   tds: string;
-  compensation: number;
-  claims: number;
-  recovery: number;
+  compensation: string;
+  claims: string;
+  recovery: string;
   compensationReason: string;
   claimsReason: string;
   recoveryReason: string;
@@ -64,9 +64,9 @@ const paymentOrderSchema: Schema = new Schema({
   productName: { type: String },
   supplierSKU: { type: String },
   liveOrderStatus: { type: String },
-  productGSTPercent: { type: Number },
-  listingPriceInclGSTAndCommission: { type: Number },
-  quantity: { type: Number },
+  productGSTPercent: { type: String },
+  listingPriceInclGSTAndCommission: { type: String },
+  quantity: { type: String },
   transactionID: { type: String },
   paymentDate: { type: String },
   finalSettlementAmount: { type: Number },
