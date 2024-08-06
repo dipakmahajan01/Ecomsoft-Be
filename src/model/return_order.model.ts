@@ -25,6 +25,7 @@ const returnOrderSchema = new Schema(
     tracking_link: { type: String },
     return_reason: { type: String, default: 'NA' },
     detailed_return_reason: { type: String, default: 'NA' },
+    sheetId: { type: String },
   },
   { timestamps: true },
 );
