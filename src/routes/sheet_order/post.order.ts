@@ -451,7 +451,7 @@ export const returnOrder = async (req: Request, res: Response) => {
             created_at: setTimesTamp(),
             order_status:
               orderInsertData.type_of_return === 'Courier Return (RTO)' ? 'currierReturn' : 'customerReturn',
-            is_return_update: true,
+            is_return_update: false,
             is_order_issue: false,
           });
         }
