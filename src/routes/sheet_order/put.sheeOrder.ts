@@ -12,6 +12,12 @@ export const updateReturnOrderHandler = async (req: Request, res: Response) => {
     await updateReturnOrderSchema.validateAsync(req.body);
     const tokenData = (req.headers as any).tokenData as ITokenData;
     const { order_id: OrderId } = req.body;
+    const orderFound = await Order.findOne({ awb_number: OrderId });
+    if (!orderFound) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(responseGenerators({}, StatusCodes.BAD_REQUEST, ORDER.NOT_FOUND, false));
+    }
     const alreadyOrderReturn = await Order.findOne({ aws_number: OrderId, is_return_update: true });
     if (alreadyOrderReturn) {
       return res
