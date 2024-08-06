@@ -32,7 +32,7 @@ export const updateReturnOrderHandler = async (req: Request, res: Response) => {
     const orderTrackingData = await OrderTracking.findOne({ user_id: tokenData.user_id });
     if (orderTrackingData) {
       await OrderTracking.findOneAndUpdate(
-        { user_id: tokenData },
+        { user_id: tokenData?.user_id },
         { $addToSet: { aws_tracking: OrderId } },
         { new: true, runValidators: true },
       );
