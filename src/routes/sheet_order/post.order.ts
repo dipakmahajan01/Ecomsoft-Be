@@ -348,7 +348,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
           account_id: accountDetails?.platform_id,
           created_at: convertDateToUnix(paymentOrderObj?.order_date),
           order_status: status,
-          is_return_update: true,
+          is_return_update: status !== 'completed',
           is_order_issue: false,
         });
       }
