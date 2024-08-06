@@ -6,6 +6,7 @@ const OrderTrackingSchema = new Schema({
   sub_order_no: { type: String },
   aws_tracking: { type: Array },
   account_id: { type: String },
+  user_id: { type: String },
 });
 
 // Create the model

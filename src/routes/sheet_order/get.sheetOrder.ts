@@ -368,10 +368,22 @@ export const getSellerAnalyticsHandler = async (req: Request, res: Response) => 
             },
           },
           totalCustomerReturn: {
-            $sum: { $cond: [{ $eq: ['$order_status', 'customerReturn'] }, 1, 0] },
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ['$order_status', 'customerReturn'] }, { $ne: [{ $type: '$price' }, 'missing'] }] },
+                1,
+                0,
+              ],
+            },
           },
           totalCurrieReturn: {
-            $sum: { $cond: [{ $eq: ['$order_status', 'currierReturn'] }, 1, 0] },
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ['$order_status', 'courierReturn'] }, { $ne: [{ $type: '$price' }, 'missing'] }] },
+                1,
+                0,
+              ],
+            },
           },
         },
       },
