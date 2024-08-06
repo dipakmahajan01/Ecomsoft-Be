@@ -18,7 +18,7 @@ export const updateReturnOrderHandler = async (req: Request, res: Response) => {
         .status(StatusCodes.BAD_REQUEST)
         .send(responseGenerators({}, StatusCodes.BAD_REQUEST, ORDER.NOT_FOUND, false));
     }
-    const alreadyOrderReturn = await Order.findOne({ aws_number: OrderId, is_return_update: true });
+    const alreadyOrderReturn = await Order.findOne({ awb_number: OrderId, is_return_update: true });
     if (alreadyOrderReturn) {
       return res
         .status(StatusCodes.BAD_REQUEST)
