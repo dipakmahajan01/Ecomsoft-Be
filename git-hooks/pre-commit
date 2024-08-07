@@ -1,0 +1,31 @@
+#!/bin/sh
+RED="\033[1;31m"
+GREEN="\033[1;32m"
+NC="\033[0m"
+# exit 0
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep  -E '\.(js|jsx|ts|tsx)$')
+# run linter on staged files
+echo "Running Linter..⚒️⚒️⚒️"
+./node_modules/.bin/eslint $STAGED_FILES --quiet --fix --max-warnings 0
+LINTER_EXIT_CODE=$?
+# run Prettier on staged files
+echo "Running Prettier..✨✨✨"
+./node_modules/.bin/prettier $STAGED_FILES --ignore-unknown --write
+# add files auto-fixed by the linter and prettier
+git add -f $STAGED_FILES
+# check linter exit code
+if [ $LINTER_EXIT_CODE -ne 0 ]
+then
+  # view eslint warrnig and error command
+  ./node_modules/.bin/eslint $STAGED_FILES --fix --max-warnings 0
+  echo "${RED} ❌ Linter errors have occurred ( ͡ಥ ͜ʖ ͡ಥ)${NC}"
+  exit 1
+else
+  echo "${GREEN} ✔ Eslint and Stylelint did not find any errors [̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]${NC}"
+  exit 0
+fi
+
+# return 0-exit code
+echo "🎉 you are a rockstar..🔥🔥🔥"
+exit 0
