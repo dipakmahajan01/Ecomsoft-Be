@@ -248,9 +248,9 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     })();
     const pagination = await setPagination(req.query);
     const returnOrderDetail = await Order.find(where)
-      .limit(pagination.limit + pagination.offset)
+      .sort({ created_at: -1 })
       .skip(pagination.offset)
-      .sort({ created_at: -1 });
+      .limit(pagination.limit);
     const returnOrderCount = await Order.count(where);
     const data: any = {
       count: returnOrderCount,

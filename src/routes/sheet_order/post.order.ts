@@ -459,7 +459,7 @@ export const returnOrder = async (req: Request, res: Response) => {
             qty: orderInsertData.Qty,
             size: '',
             pickup_courier_partner: orderInsertData.courier_partner,
-            order_date: convertDateToUnix(orderInsertData.order_date),
+            order_date: convertIntoUnix(orderInsertData.order_date),
             supplier_name: accountDetails.account_name,
             account_id: accountDetails.platform_id,
             created_at: setTimesTamp(),
