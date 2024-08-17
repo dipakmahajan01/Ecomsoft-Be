@@ -101,4 +101,5 @@ export const ORDER = {
   RETURN_NOT_FOUND: 'Return order not found',
   FOUND_ORDER_REPORT: 'found order report',
   ORDER_AlREADY_SCAN: 'already order scan',
+  CANCELLED: 'order successfully cancelled',
 };

@@ -245,6 +245,9 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
       if (status === 'completed') {
         where.order_status = status;
       }
+      if (status === 'cancelled') {
+        where.order_status = status;
+      }
     })();
     const pagination = await setPagination(req.query);
     const returnOrderDetail = await Order.find(where)
