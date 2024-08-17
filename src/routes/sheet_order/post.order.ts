@@ -425,14 +425,26 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
 export const returnOrder = async (req: Request, res: Response) => {
   try {
     const fileLocation: any = req.file.buffer;
-    // const { account_name: accountName } = req.body;
-    // const accountDetails: any = await sellerAccounts.findOne({ account_name: accountName });
-    // if (!accountDetails) {
-    //   return res
-    //     .status(StatusCodes.NOT_FOUND)
-    //     .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
-    // }
+    const { account_name: accountName } = req.body;
+    const accountDetails: any = await sellerAccounts.findOne({ account_name: accountName });
+    if (!accountDetails) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
+    }
 
+    const sheetId = generatePublicId();
+    try {
+      await storeFile({
+        file: fileLocation,
+        fileName: `${accountName}_${sheetId}.xlsx`,
+        contentType: 'auto',
+        location: 'Returns',
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
     const file = XLSX.read(fileLocation);
     const sheetNameList: any = file.SheetNames;
     const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]]);
@@ -475,10 +487,28 @@ export const returnOrder = async (req: Request, res: Response) => {
           return_reason: order['Return Reason'],
           detailed_return_reason: order['Detailed Return Reason'],
           created_at: setTimesTamp(),
+          sheetId,
         };
         const findOrderData = await Order.findOne({ sub_order_no: orderInsertData.suborder_number });
         if (!findOrderData) {
-          break;
+          await Order.create({
+            order_id: generatePublicId(),
+            sub_order_no: orderInsertData.suborder_number,
+            awb: orderInsertData.awb_number,
+            sku: orderInsertData.sku,
+            qty: orderInsertData.Qty,
+            size: '',
+            pickup_courier_partner: orderInsertData.courier_partner,
+            order_date: convertIntoUnix(orderInsertData.order_date),
+            supplier_name: accountDetails.account_name,
+            account_id: accountDetails.platform_id,
+            created_at: setTimesTamp(),
+            order_status:
+              orderInsertData.type_of_return === 'Courier Return (RTO)' ? 'currierReturn' : 'customerReturn',
+            is_return_update: false,
+            is_order_issue: false,
+            sheetId,
+          });
         }
         await Order.findOneAndUpdate(
           { sub_order_no: orderInsertData.suborder_number },

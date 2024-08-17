@@ -14,6 +14,9 @@
     "server": "tsc-watch --outDir ./build --onSuccess \"npm run start -- --mode=http\" --onFailure \"echo ERROR! Compilation Failed\"",
     "debug": "tsc-watch --outDir ./build --onSuccess \"npm run runDebug -- --mode=http \" --onFailure \"echo ERROR! Compilation Failed\"",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall-production": "echo \"production, skipping...\"",
+    "postinstall-dev": "git config core.hooksPath ./git-hooks",
+    "postinstall": "if-env NODE_ENV=production && npm run postinstall-production || npm run postinstall-dev || true",
     "lint": "eslint .",
     "format": "prettier --write \"{src,apps,libs,test}/**/*.ts\""
   },
