@@ -3,7 +3,7 @@
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { convertDateToUnix, convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
+import { convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
 import sellerAccounts from '../../model/seller_accounts.model';
@@ -115,7 +115,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       const date = extractValueByKey(detailsContainerString, 'Date');
       const courierInfo = extractValueByKey(detailsContainerString, 'Courier');
 
-      parsedData['Courier'] = courierInfo[1]?.trim();
+      parsedData['Courier'] = courierInfo?.trim();
       parsedData['Supplier Name'] = supplierName;
       parsedData['date'] = date;
       sellerAccount.sheet_account_name = supplierName.trim().split(' ').join('').toLowerCase().toLowerCase();
@@ -190,12 +190,13 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
           const orderInsertData = {
             order_id: generatePublicId(),
             sub_order_no: order.sub_order_no_,
+            awb_number: order.awb.toString(),
             awb: order.awb,
             sku: order.sku,
             qty: order.qty_,
             size: order.size,
             pickup_courier_partner: order.courier,
-            order_date: order.date,
+            order_date: convertIntoUnix(order.date),
             supplier_name: order.supplier_name,
             account_id: sellerAccount.platform_id,
             created_at: setTimesTamp(),
@@ -333,25 +334,6 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       if (paymentOrderObj.liveOrderStatus === 'Cancelled') {
         status = 'cancelled';
       }
-      const findOrderData = await Order.findOne({ sub_order_no: paymentOrderObj.subOrderNo });
-      if (!findOrderData) {
-        await Order.create({
-          order_id: generatePublicId(),
-          sub_order_no: paymentOrderObj?.subOrderNo,
-          sku: paymentOrderObj?.supplierSKU,
-          qty: paymentOrderObj?.quantity?.toString(),
-          size: '',
-          price: parseFloat(data['Final Settlement Amount']),
-          pickup_courier_partner: paymentOrderObj?.courier_partner,
-          order_date: paymentOrderObj?.orderDate,
-          supplier_name: accountDetails?.account_name,
-          account_id: accountDetails?.platform_id,
-          created_at: convertDateToUnix(paymentOrderObj?.order_date),
-          order_status: status,
-          is_return_update: status !== 'completed',
-          is_order_issue: false,
-        });
-      }
       await Order.findOneAndUpdate(
         { sub_order_no: data['Sub Order No']?.trim(), is_return_update: true },
         { $set: { order_status: status, order_price: String(paymentOrderObj.finalSettlementAmount) } },
@@ -421,7 +403,7 @@ export const returnOrder = async (req: Request, res: Response) => {
     const orders = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], { header: headerRange, range: headerRange });
     const orderD = [];
     for (const order of orders) {
-      const findOrderData = await ReturnOrder.findOne({ suborder_number: order['Suborder Number'] });
+      const findOrderData = await ReturnOrder.findOne({ sub_order_no: order['Suborder Number'] });
       if (!findOrderData) {
         const orderInsertData = {
           return_order_id: generatePublicId(),
@@ -432,7 +414,7 @@ export const returnOrder = async (req: Request, res: Response) => {
           Qty: order['Qty'],
           category: order['Order Number'],
           order_number: order['Order Number'],
-          suborder_number: order['Suborder Number'],
+          sub_order_no: order['Suborder Number'],
           order_date: order['Order Date'],
           dispatch_date: order['Dispatch Date'],
           return_created_date: order['Return Created Date'],
@@ -449,29 +431,9 @@ export const returnOrder = async (req: Request, res: Response) => {
           created_at: setTimesTamp(),
           sheetId,
         };
-        const findOrderData = await Order.findOne({ sub_order_no: orderInsertData.suborder_number });
-        if (!findOrderData) {
-          await Order.create({
-            order_id: generatePublicId(),
-            sub_order_no: orderInsertData.suborder_number,
-            awb: orderInsertData.awb_number,
-            sku: orderInsertData.sku,
-            qty: orderInsertData.Qty,
-            size: '',
-            pickup_courier_partner: orderInsertData.courier_partner,
-            order_date: convertIntoUnix(orderInsertData.order_date),
-            supplier_name: accountDetails.account_name,
-            account_id: accountDetails.platform_id,
-            created_at: setTimesTamp(),
-            order_status:
-              orderInsertData.type_of_return === 'Courier Return (RTO)' ? 'currierReturn' : 'customerReturn',
-            is_return_update: false,
-            is_order_issue: false,
-            sheetId,
-          });
-        }
-        await Order.findOneAndUpdate(
-          { sub_order_no: orderInsertData.suborder_number },
+
+        const updateOrder = await Order.findOneAndUpdate(
+          { sub_order_no: orderInsertData.sub_order_no },
           {
             $set: {
               awb_number: orderInsertData.awb_number,
@@ -480,9 +442,13 @@ export const returnOrder = async (req: Request, res: Response) => {
               return_currier_partner: orderInsertData.courier_partner,
             },
           },
+          {
+            returnOriginal: false,
+          },
         );
-
-        orderD.push(orderInsertData);
+        if (updateOrder) {
+          orderD.push(orderInsertData);
+        }
       }
     }
     const data = await ReturnOrder.insertMany(orderD);

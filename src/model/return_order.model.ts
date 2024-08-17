@@ -11,7 +11,7 @@ const returnOrderSchema = new Schema(
     category: { type: String },
     qty: { type: Number },
     order_number: { type: Number },
-    suborder_number: { type: String },
+    sub_order_no: { type: String },
     order_date: { type: Date },
     dispatch_date: { type: Date },
     return_created_date: { type: Date },
