@@ -43,7 +43,7 @@ const API_KEY = process.env.PDF_REST_API_KEY;
 //   fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
 // }
 
-function isSubstringInArray(substring: string, array: string[]): boolean {
+function isSubstringInArray(substring: string, array: string[] = []): boolean {
   for (const str of array) {
     if (str?.toLowerCase()?.includes(substring.toLowerCase())) {
       return true;
@@ -56,6 +56,10 @@ function extractValueByKey(input, key) {
   const regex = new RegExp(`${key}\\s*:\\s*([^\\n]*)`, 'i');
   const match = input?.match(regex);
   return match ? match[1].trim() : null;
+}
+
+function cleanString(str: string): string {
+  return str.replace(/\s+/g, '').toLowerCase();
 }
 
 export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
@@ -76,6 +80,20 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     }
     const excelFile = await getExcelFileByUrl(data.outputUrl);
 
+    const file = XLSX.read(excelFile);
+    const sheetNameList = file.SheetNames;
+
+    for (const sheetName of sheetNameList) {
+      const headerSheet = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 1, range: 0 });
+
+      let dataStr: any = headerSheet[0];
+      if (!isSubstringInArray('Picklist', dataStr) || !isSubstringInArray('Courier', dataStr)) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .send(responseGenerators({}, StatusCodes.BAD_REQUEST, 'Only the order pdf is allowed for upload', true));
+      }
+    }
+
     const sheetId = generatePublicId();
     try {
       await storeFile({
@@ -89,8 +107,6 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       console.error(error);
     }
 
-    const file = XLSX.read(excelFile);
-    const sheetNameList = file.SheetNames;
     let orders = [];
     // let sheets;
     // let sellerData;
@@ -234,6 +250,41 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
     }
 
+    const file = XLSX.read(fileLocation);
+    const sheetNameList: any = file.SheetNames;
+
+    const [firstSheetName] = sheetNameList ?? [];
+    if (cleanString(firstSheetName) !== 'orderpayments') {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(responseGenerators({}, StatusCodes.BAD_REQUEST, 'Only the payment sheet is allowed for upload', true));
+    }
+
+    const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], {
+      header: 0,
+      range: 1,
+    });
+    let orderD = [];
+
+    const subOrderNumber = orderDetails[2]['Sub Order No'];
+    const foundOrder: any = await Order.find({ sub_order_no: subOrderNumber });
+
+    if (foundOrder.supplier_name !== accountName) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, `The payment sheet does not belong to ${accountName}`, true),
+        );
+    }
+
+    const paymentOrderData = await PaymentOrders.findOne({ subOrderNo: subOrderNumber });
+
+    if (paymentOrderData) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(responseGenerators({}, StatusCodes.OK, 'payment sheet already added', true));
+    }
+
     const sheetId = generatePublicId();
     try {
       await storeFile({
@@ -247,19 +298,6 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       console.error(error);
     }
 
-    const file = XLSX.read(fileLocation);
-    const sheetNameList: any = file.SheetNames;
-    const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], {
-      header: 0,
-      range: 1,
-    });
-    let orderD = [];
-    const paymentOrderData = await PaymentOrders.findOne({ subOrderNo: orderDetails[2]['Sub Order No'] });
-    if (paymentOrderData) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(responseGenerators({}, StatusCodes.OK, 'payment sheet already added', true));
-    }
     for (const data of orderDetails) {
       if (!data['Sub Order No']) continue;
       const paymentOrderObj: any = {
@@ -387,17 +425,19 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
 export const returnOrder = async (req: Request, res: Response) => {
   try {
     const fileLocation: any = req.file.buffer;
-    const { account_name: accountName } = req.body;
-    const accountDetails: any = await sellerAccounts.findOne({ account_name: accountName });
-    if (!accountDetails) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
-    }
+    // const { account_name: accountName } = req.body;
+    // const accountDetails: any = await sellerAccounts.findOne({ account_name: accountName });
+    // if (!accountDetails) {
+    //   return res
+    //     .status(StatusCodes.NOT_FOUND)
+    //     .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
+    // }
+
     const file = XLSX.read(fileLocation);
     const sheetNameList: any = file.SheetNames;
     const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]]);
     let headerRange: number;
+
     for (let index = 0; index < orderDetails.length; index += 1) {
       const element = orderDetails[index]['Meesho Supplier Panel'] === 1 || orderDetails[index]['__EMPTY'] === 1;
       if (element) {
@@ -405,6 +445,7 @@ export const returnOrder = async (req: Request, res: Response) => {
         break;
       }
     }
+
     const orders = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], { header: headerRange, range: headerRange });
     const orderD = [];
     for (const order of orders) {
@@ -437,23 +478,7 @@ export const returnOrder = async (req: Request, res: Response) => {
         };
         const findOrderData = await Order.findOne({ sub_order_no: orderInsertData.suborder_number });
         if (!findOrderData) {
-          await Order.create({
-            order_id: generatePublicId(),
-            sub_order_no: orderInsertData.suborder_number,
-            awb: orderInsertData.awb_number,
-            sku: orderInsertData.sku,
-            qty: orderInsertData.Qty,
-            size: '',
-            pickup_courier_partner: orderInsertData.courier_partner,
-            order_date: convertDateToUnix(orderInsertData.order_date),
-            supplier_name: accountDetails.account_name,
-            account_id: accountDetails.platform_id,
-            created_at: setTimesTamp(),
-            order_status:
-              orderInsertData.type_of_return === 'Courier Return (RTO)' ? 'currierReturn' : 'customerReturn',
-            is_return_update: false,
-            is_order_issue: false,
-          });
+          break;
         }
         await Order.findOneAndUpdate(
           { sub_order_no: orderInsertData.suborder_number },
