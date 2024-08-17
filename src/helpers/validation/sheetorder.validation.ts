@@ -16,3 +16,6 @@ export const getAnalyticsSchema = Joi.object({
 export const updateReturnOrderSchema = Joi.object({
   order_id: Joi.string().required(),
 });
+export const cancelledOrderSchema = Joi.object({
+  sub_order_id: Joi.string().required(),
+});

@@ -5,7 +5,7 @@ import { responseGenerators } from '../../lib';
 import { ERROR, ITokenData, ORDER } from '../../common/global-constants';
 import OrderTracking from '../../model/order_tracking.mode';
 import Order from '../../model/sheet_order.model';
-import { updateReturnOrderSchema } from '../../helpers/validation/sheetorder.validation';
+import { cancelledOrderSchema, updateReturnOrderSchema } from '../../helpers/validation/sheetorder.validation';
 
 export const updateReturnOrderHandler = async (req: Request, res: Response) => {
   try {
@@ -77,5 +77,25 @@ export const updateReturnOrderHandler = async (req: Request, res: Response) => {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, false));
+  }
+};
+
+export const cancelledOrderHandler = async (req: Request, res: Response) => {
+  try {
+    await cancelledOrderSchema.validateAsync(req.body);
+    const { sub_order_id: subOrderId } = req.body;
+    const order = await Order.findOne({ sub_order_no: subOrderId });
+
+    if (!order) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .send(responseGenerators({}, StatusCodes.NOT_FOUND, ORDER.NOT_FOUND, true));
+    }
+    await Order.updateOne({ sub_order_no: subOrderId }, { order_status: 'cancelled' });
+    return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CANCELLED, false));
+  } catch (error) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, true));
   }
 };
