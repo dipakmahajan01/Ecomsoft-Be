@@ -87,7 +87,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       const headerSheet = XLSX.utils.sheet_to_json(file.Sheets[sheetName], { header: 1, range: 0 });
 
       let dataStr: any = headerSheet[0];
-      if (!isSubstringInArray('Picklist', dataStr) || !isSubstringInArray('Courier', dataStr)) {
+      if (!(isSubstringInArray('Picklist', dataStr) || isSubstringInArray('Courier', dataStr))) {
         return res
           .status(StatusCodes.BAD_REQUEST)
           .send(responseGenerators({}, StatusCodes.BAD_REQUEST, 'Only the order pdf is allowed for upload', true));
@@ -205,8 +205,8 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         if (!findOrderData) {
           const orderInsertData = {
             order_id: generatePublicId(),
-            sub_order_no: order.sub_order_no_,
-            awb_number: order.awb.toString(),
+            sub_order_no: order?.sub_order_no_,
+            awb_number: order?.awb?.toString(),
             awb: order.awb,
             sku: order.sku,
             qty: order.qty_,
@@ -268,15 +268,15 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
     let orderD = [];
 
     const subOrderNumber = orderDetails[2]['Sub Order No'];
-    const foundOrder: any = await Order.find({ sub_order_no: subOrderNumber });
+    // const foundOrder: any = await Order.find({ sub_order_no: subOrderNumber });
 
-    if (foundOrder.supplier_name !== accountName) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, `The payment sheet does not belong to ${accountName}`, true),
-        );
-    }
+    // if (foundOrder.supplier_name !== accountName) {
+    //   return res
+    //     .status(StatusCodes.BAD_REQUEST)
+    //     .send(
+    //       responseGenerators({}, StatusCodes.BAD_REQUEST, `The payment sheet does not belong to ${accountName}`, true),
+    //     );
+    // }
 
     const paymentOrderData = await PaymentOrders.findOne({ subOrderNo: subOrderNumber });
 
