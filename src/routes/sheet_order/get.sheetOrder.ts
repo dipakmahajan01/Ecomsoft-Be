@@ -232,7 +232,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
             where.order_status = status;
           }
         } else {
-          where.order_status = { $nin: ['completed'] };
+          where.order_status = { $nin: ['completed', 'cancelled'] };
         }
         return;
       }
