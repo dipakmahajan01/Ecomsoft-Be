@@ -22,6 +22,7 @@ const orderSchema = new Schema({
   awb_number: { type: String },
   return_currier_partner: { type: String },
   sheetId: { type: String },
+  is_claim: { type: Boolean },
 });
 
 // Create the model

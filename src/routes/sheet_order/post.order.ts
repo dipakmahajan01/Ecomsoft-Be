@@ -357,7 +357,8 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         sheetId,
       };
       let status = 'completed';
-      if (paymentOrderObj.liveOrderStatus === 'RTO' || paymentOrderData?.finalSettlementAmount === 0.0) {
+      let isClaim = false;
+      if (paymentOrderObj.liveOrderStatus === 'RTO') {
         status = 'currierReturn';
       }
       if (paymentOrderObj.liveOrderStatus === 'Return') {
@@ -372,9 +373,14 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       if (paymentOrderObj.liveOrderStatus === 'Cancelled') {
         status = 'cancelled';
       }
+      if (!paymentOrderObj.liveOrderStatus) {
+        isClaim = true;
+      }
       await Order.findOneAndUpdate(
         { sub_order_no: data['Sub Order No']?.trim(), is_return_update: true },
-        { $set: { order_status: status, order_price: String(paymentOrderObj.finalSettlementAmount) } },
+        {
+          $set: { order_status: status, order_price: String(paymentOrderObj.finalSettlementAmount), is_claim: isClaim },
+        },
       );
       await Order.findOneAndUpdate(
         { sub_order_no: data['Sub Order No']?.trim(), is_return_update: false },
@@ -387,11 +393,31 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
           },
         },
       );
-      orderD.push({
-        insertOne: {
-          document: paymentOrderObj,
-        },
-      });
+      const paymentOrderFind = await PaymentOrders.findOne({ subOrderNo: paymentOrderObj.subOrderNo });
+      if (paymentOrderFind) {
+        await PaymentOrders.findOneAndUpdate(
+          { subOrderNo: paymentOrderObj.subOrderNo },
+          { $set: { order_status: paymentOrderObj.liveOrderStatus } },
+        );
+
+        await Order.findOneAndUpdate(
+          {
+            sub_order_no: paymentOrderData.subOrderNo,
+          },
+          {
+            $set: {
+              order_status: paymentOrderObj?.liveOrderStatus,
+              order_price: paymentOrderObj?.finalSettlementAmount,
+            },
+          },
+        );
+      } else {
+        orderD.push({
+          insertOne: {
+            document: paymentOrderObj,
+          },
+        });
+      }
     }
     orderD.shift();
     await PaymentOrders.bulkWrite(orderD);
