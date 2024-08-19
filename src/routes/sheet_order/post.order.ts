@@ -390,6 +390,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
             order_price: String(paymentOrderObj.finalSettlementAmount),
             issue_message:
               status === 'completed' ? '' : 'The payment is done but product is pending delivery to your company',
+            is_claim: isClaim,
           },
         },
       );
@@ -408,6 +409,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
             $set: {
               order_status: paymentOrderObj?.liveOrderStatus,
               order_price: paymentOrderObj?.finalSettlementAmount,
+              is_claim: paymentOrderObj?.liveOrderStatus ? false : isClaim,
             },
           },
         );
