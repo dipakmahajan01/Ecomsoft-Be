@@ -12,7 +12,7 @@ import Order from '../../model/sheet_order.model';
 import PaymentOrders from '../../model/payment_order.model';
 import { convertPdfToExcel, getExcelFileByUrl } from '../../helpers/excel/convertPdfToExcel';
 import ReturnOrder from '../../model/return_order.model';
-import { storeFile } from '../../firebase';
+// import { storeFile } from '../../firebase';
 
 const API_KEY = process.env.PDF_REST_API_KEY;
 
@@ -95,18 +95,18 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       }
     }
 
-    const sheetId = generatePublicId();
-    try {
-      await storeFile({
-        file: excelFile,
-        fileName: `${accountName}_${sheetId}.xlsx`,
-        contentType: 'auto',
-        location: 'orders',
-      });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
+    // const sheetId = generatePublicId();
+    // try {
+    //   await storeFile({
+    //     file: excelFile,
+    //     fileName: `${accountName}_${sheetId}.xlsx`,
+    //     contentType: 'auto',
+    //     location: 'orders',
+    //   });
+    // } catch (error) {
+    //   // eslint-disable-next-line no-console
+    //   console.error(error);
+    // }
 
     let orders = [];
     // let sheets;
@@ -290,17 +290,17 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
     }
 
     const sheetId = generatePublicId();
-    try {
-      await storeFile({
-        file: fileLocation,
-        fileName: `${accountName}_${sheetId}.xlsx`,
-        contentType: 'auto',
-        location: 'Payment',
-      });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
+    // try {
+    //   await storeFile({
+    //     file: fileLocation,
+    //     fileName: `${accountName}_${sheetId}.xlsx`,
+    //     contentType: 'auto',
+    //     location: 'Payment',
+    //   });
+    // } catch (error) {
+    //   // eslint-disable-next-line no-console
+    //   console.error(error);
+    // }
 
     for (const data of orderDetails) {
       if (!data['Sub Order No']) continue;
@@ -413,6 +413,7 @@ export const returnOrder = async (req: Request, res: Response) => {
     const { account_name: accountName } = req.body;
 
     const sheetId = generatePublicId();
+<<<<<<< HEAD
     try {
       await storeFile({
         file: fileLocation,
@@ -424,6 +425,19 @@ export const returnOrder = async (req: Request, res: Response) => {
       // eslint-disable-next-line no-console
       console.error(error);
     }
+=======
+    // try {
+    //   await storeFile({
+    //     file: fileLocation,
+    //     fileName: `${accountName}_${sheetId}.xlsx`,
+    //     contentType: 'auto',
+    //     location: 'Returns',
+    //   });
+    // } catch (error) {
+    //   // eslint-disable-next-line no-console
+    //   console.error(error);
+    // }
+>>>>>>> 2e8501b5c2afce9b88c4fc68a9b70acf5156fa86
     const file = XLSX.read(fileLocation);
     const sheetNameList: any = file.SheetNames;
     const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]]);
