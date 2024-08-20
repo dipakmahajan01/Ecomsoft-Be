@@ -411,18 +411,12 @@ export const returnOrder = async (req: Request, res: Response) => {
   try {
     const fileLocation: any = req.file.buffer;
     const { account_name: accountName } = req.body;
-    const accountDetails: any = await sellerAccounts.findOne({ account_name: accountName });
-    if (!accountDetails) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
-    }
 
     const sheetId = generatePublicId();
     try {
       await storeFile({
         file: fileLocation,
-        fileName: `${accountName}_${sheetId}.xlsx`,
+        fileName: `${sheetId}.xlsx`,
         contentType: 'auto',
         location: 'Returns',
       });
