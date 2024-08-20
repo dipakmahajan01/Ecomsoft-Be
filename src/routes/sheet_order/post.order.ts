@@ -410,22 +410,9 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
 export const returnOrder = async (req: Request, res: Response) => {
   try {
     const fileLocation: any = req.file.buffer;
-    const { account_name: accountName } = req.body;
+    // const { account_name: accountName } = req.body;
 
     const sheetId = generatePublicId();
-<<<<<<< HEAD
-    try {
-      await storeFile({
-        file: fileLocation,
-        fileName: `${sheetId}.xlsx`,
-        contentType: 'auto',
-        location: 'Returns',
-      });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-=======
     // try {
     //   await storeFile({
     //     file: fileLocation,
@@ -437,7 +424,6 @@ export const returnOrder = async (req: Request, res: Response) => {
     //   // eslint-disable-next-line no-console
     //   console.error(error);
     // }
->>>>>>> 2e8501b5c2afce9b88c4fc68a9b70acf5156fa86
     const file = XLSX.read(fileLocation);
     const sheetNameList: any = file.SheetNames;
     const orderDetails = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]]);
