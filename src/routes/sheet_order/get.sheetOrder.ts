@@ -251,9 +251,9 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     })();
     const pagination = await setPagination(req.query);
     const returnOrderDetail = await Order.find(where)
-      .sort({ created_at: -1 })
-      .skip(pagination.offset)
-      .limit(pagination.limit);
+      .sort({ order_date: -1 })
+      .limit(pagination.limit)
+      .skip(pagination.offset);
     const returnOrderCount = await Order.count(where);
     const data: any = {
       count: returnOrderCount,
@@ -365,6 +365,16 @@ export const getSellerAnalyticsHandler = async (req: Request, res: Response) => 
               $cond: [{ $eq: ['$order_status', 'completed'] }, '$orderDetails.finalSettlementAmount', 0],
             },
           },
+          totalExchangeAmount: {
+            $sum: {
+              $cond: [{ $eq: ['$order_status', 'exchange'] }, '$orderDetails.finalSettlementAmount', 0],
+            },
+          },
+          totalSippedAmount: {
+            $sum: {
+              $cond: [{ $eq: ['$order_status', 'shipped'] }, '$orderDetails.finalSettlementAmount', 0],
+            },
+          },
           totalCustomerReturnLoss: {
             $sum: {
               $cond: [{ $eq: ['$order_status', 'customerReturn'] }, '$orderDetails.finalSettlementAmount', 0],
@@ -391,7 +401,11 @@ export const getSellerAnalyticsHandler = async (req: Request, res: Response) => 
         },
       },
       {
-        $addFields: { totalSales: { $add: ['$totalProfit', '$totalCustomerReturnLoss'] } },
+        $addFields: {
+          totalSales: {
+            $add: ['$totalProfit', '$totalCustomerReturnLoss', '$totalSippedAmount', '$totalExchangeAmount'],
+          },
+        },
       },
     ];
     const [sellerAnalytics] = await Order.aggregate(orderArr);
