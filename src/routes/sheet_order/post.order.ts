@@ -3,6 +3,7 @@
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { ITokenData } from '../../services/common.types';
 import { convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
@@ -64,9 +65,9 @@ function cleanString(str: string): string {
 
 export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
   try {
-    const fileLocation: any = req.file.buffer;
+    const fileLocation: any = req.file?.buffer;
     const { account_name: accountName } = req.body;
-
+    const tokenData = (req.headers as any).tokenData as ITokenData;
     let sellerAccount: any = await sellerAccounts.findOne({ account_name: accountName });
     if (!sellerAccount) {
       return res
@@ -143,6 +144,8 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
           supplierName.trim().split(' ').join('').toLowerCase().toLowerCase()
             ? supplierName.trim().split(' ').join('').toLowerCase().toLowerCase()
             : '',
+        user_id: tokenData?.user_id,
+        is_deleted: false,
       });
       const accountId: any = accountDetails?.platform_id;
 
@@ -443,13 +446,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
 export const returnOrder = async (req: Request, res: Response) => {
   try {
     const fileLocation: any = req.file.buffer;
-    const { account_name: accountName } = req.body;
-    const accountDetails: any = await sellerAccounts.findOne({ account_name: accountName });
-    if (!accountDetails) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
-    }
+    // const { account_name: accountName } = req.body;
 
     const sheetId = generatePublicId();
     // try {
