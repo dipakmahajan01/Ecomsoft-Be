@@ -358,17 +358,27 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       };
       let status = 'completed';
       let isClaim = false;
+      let isExchange = false;
       if (paymentOrderObj.liveOrderStatus === 'RTO') {
         status = 'currierReturn';
       }
       if (paymentOrderObj.liveOrderStatus === 'Return') {
         status = 'customerReturn';
+        if (paymentOrderObj.shippingChargeExclGST) {
+          isExchange = true;
+        }
       }
       if (paymentOrderObj.liveOrderStatus === 'Exchange') {
         status = 'exchange';
+        if (paymentOrderObj.shippingChargeExclGST) {
+          isExchange = true;
+        }
       }
       if (paymentOrderObj.liveOrderStatus === 'Shipped') {
         status = 'shipped';
+        if (paymentOrderObj.shippingChargeExclGST) {
+          isExchange = true;
+        }
       }
       if (paymentOrderObj.liveOrderStatus === 'Cancelled') {
         status = 'cancelled';
@@ -376,24 +386,6 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       if (!paymentOrderObj.liveOrderStatus) {
         isClaim = true;
       }
-      await Order.findOneAndUpdate(
-        { sub_order_no: data['Sub Order No']?.trim(), is_return_update: true },
-        {
-          $set: { order_status: status, order_price: String(paymentOrderObj.finalSettlementAmount), is_claim: isClaim },
-        },
-      );
-      await Order.findOneAndUpdate(
-        { sub_order_no: data['Sub Order No']?.trim(), is_return_update: false },
-        {
-          $set: {
-            order_status: status,
-            order_price: String(paymentOrderObj.finalSettlementAmount),
-            issue_message:
-              status === 'completed' ? '' : 'The payment is done but product is pending delivery to your company',
-            is_claim: isClaim,
-          },
-        },
-      );
       const paymentOrderFind = await PaymentOrders.findOne({ subOrderNo: paymentOrderObj.subOrderNo });
       if (paymentOrderFind) {
         await PaymentOrders.findOneAndUpdate(
@@ -403,17 +395,33 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
 
         await Order.findOneAndUpdate(
           {
-            sub_order_no: paymentOrderData.subOrderNo,
+            sub_order_no: paymentOrderFind.subOrderNo,
           },
           {
             $set: {
               order_status: paymentOrderObj?.liveOrderStatus,
               order_price: paymentOrderObj?.finalSettlementAmount,
               is_claim: paymentOrderObj?.liveOrderStatus ? false : isClaim,
+              issue_message:
+                status === 'completed' ? '' : 'The payment is done but product is pending delivery to your company',
+              is_exchange: isExchange,
             },
           },
         );
       } else {
+        await Order.findOneAndUpdate(
+          { sub_order_no: paymentOrderObj.subOrderNo },
+          {
+            $set: {
+              order_status: status,
+              order_price: String(paymentOrderObj.finalSettlementAmount),
+              is_claim: isClaim,
+              issue_message:
+                status === 'completed' ? '' : 'The payment is done but product is pending delivery to your company',
+              is_exchange: isExchange,
+            },
+          },
+        );
         orderD.push({
           insertOne: {
             document: paymentOrderObj,

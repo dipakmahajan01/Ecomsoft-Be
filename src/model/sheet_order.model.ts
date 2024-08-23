@@ -23,6 +23,7 @@ const orderSchema = new Schema({
   return_currier_partner: { type: String },
   sheetId: { type: String },
   is_claim: { type: Boolean },
+  is_exchange: { type: Boolean },
 });
 
 // Create the model
