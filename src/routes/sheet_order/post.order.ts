@@ -149,18 +149,18 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
       });
       const accountId: any = accountDetails?.platform_id;
 
-      // if (sellerAccount.platform_id !== accountId) {
-      //   return res
-      //     .status(StatusCodes.BAD_REQUEST)
-      //     .send(
-      //       responseGenerators(
-      //         {},
-      //         StatusCodes.BAD_REQUEST,
-      //         'Provided sheet does not match the selected account. Please select the correct account',
-      //         true,
-      //       ),
-      //     );
-      // }
+      if (sellerAccount.platform_id !== accountId) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .send(
+            responseGenerators(
+              {},
+              StatusCodes.BAD_REQUEST,
+              'Provided sheet does not match the selected account. Please select the correct account',
+              true,
+            ),
+          );
+      }
 
       parsedData['account_id'] = accountId;
 
