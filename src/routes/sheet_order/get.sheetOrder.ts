@@ -251,7 +251,7 @@ export const returnOrderHandler = async (req: Request, res: Response) => {
     })();
     const pagination = await setPagination(req.query);
     const returnOrderDetail = await Order.find(where)
-      .sort({ order_date: -1 })
+      .sort({ created_at: -1 })
       .limit(pagination.limit)
       .skip(pagination.offset);
     const returnOrderCount = await Order.count(where);

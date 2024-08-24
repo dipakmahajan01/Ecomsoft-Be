@@ -18,6 +18,9 @@ export const generatePublicId = (): string => {
 export const setTimesTamp = () => {
   return dayjs().unix();
 };
+export const setTimesTampNano = () => {
+  return dayjs().unix() * 1000 + dayjs().millisecond();
+};
 export const hashPassword = async (password: any) => {
   return bcrypt.hashSync(password, salt);
 };

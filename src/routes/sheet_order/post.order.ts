@@ -4,7 +4,7 @@ import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { ITokenData } from '../../services/common.types';
-import { convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
+import { convertIntoUnix, generatePublicId, setTimesTamp, setTimesTampNano } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
 import { ERROR, ORDER } from '../../common/global-constants';
 import sellerAccounts from '../../model/seller_accounts.model';
@@ -218,7 +218,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
             order_date: convertIntoUnix(order.date),
             supplier_name: order.supplier_name,
             account_id: sellerAccount.platform_id,
-            created_at: setTimesTamp(),
+            created_at: setTimesTampNano(),
             sheetId: order?.sheet_id,
           };
           orderDetails.push({
