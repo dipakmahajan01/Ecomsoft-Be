@@ -20,7 +20,7 @@ const configs: any = {
 
 const config = configs[process.env.NODE_ENV || 'development'].connection;
 /** Connect to Mongo */
-export const mongooseConnection = async () => {
+export const mongooseConnection = async (url) => {
   mongoose.set('strictQuery', false);
-  return mongoose.connect(config);
+  return mongoose.connect(url ?? config);
 };

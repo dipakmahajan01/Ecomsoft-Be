@@ -108,3 +108,6 @@ dist
 .xlsx
 
 build
+
+src/__test__/logs
+src/sheetUpload

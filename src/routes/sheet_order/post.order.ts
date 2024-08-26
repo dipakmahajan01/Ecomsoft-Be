@@ -3,6 +3,9 @@
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import path from 'path';
+import fs from 'fs';
+
 import { ITokenData } from '../../services/common.types';
 import { convertIntoUnix, generatePublicId, setTimesTamp } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
@@ -16,33 +19,37 @@ import ReturnOrder from '../../model/return_order.model';
 
 const API_KEY = process.env.PDF_REST_API_KEY;
 
-// function generateFileName(baseName: string): string {
-//   const now = new Date();
-//   const year = now.getFullYear();
-//   const month = String(now.getMonth() + 1).padStart(2, '0');
-//   const day = String(now.getDate()).padStart(2, '0');
-//   const hours = String(now.getHours()).padStart(2, '0');
-//   const minutes = String(now.getMinutes()).padStart(2, '0');
-//   const seconds = String(now.getSeconds()).padStart(2, '0');
+function generateFileName(baseName: string): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
 
-//   return `${baseName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
-// }
+  return `${baseName}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+}
 
-// function storeBufferAndObject(buffer: Buffer, obj: any, filePath: string): void {
-//   // Ensure the directory exists
-//   const excelPath = `${filePath + generateFileName('excel')}.xlsx`;
-//   const dir = path.dirname(excelPath);
-//   if (!fs.existsSync(dir)) {
-//     fs.mkdirSync(dir, { recursive: true });
-//   }
+function storeBufferAndObject(buffer: Buffer, obj: any, filePath: string): void {
+  // Ensure the directory exists
+  if (buffer) {
+    const excelPath = `sheetUpload/${filePath + generateFileName('excel')}.xlsx`;
+    const dir = path.dirname(excelPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
 
-//   // Write the buffer to the specified file path
-//   fs.writeFileSync(excelPath, buffer);
+    // Write the buffer to the specified file path
+    fs.writeFileSync(excelPath, buffer);
+  }
 
-//   // Write the object to a JSON file in the same directory
-//   const objFilePath = `${filePath + generateFileName('json')}.json`;
-//   fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
-// }
+  if (obj) {
+    // Write the object to a JSON file in the same directory
+    const objFilePath = `sheetUpload/${filePath + generateFileName('json')}.json`;
+    fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
+  }
+}
 
 function isSubstringInArray(substring: string, array: string[] = []): boolean {
   for (const str of array) {
@@ -102,7 +109,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     //     fileName: `${accountName}_${sheetId}.xlsx`,
     //     contentType: 'auto',
     //     location: 'orders',
-    //   });
+    //   });x
     // } catch (error) {
     //   // eslint-disable-next-line no-console
     //   console.error(error);
@@ -148,8 +155,7 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
         is_deleted: false,
       });
       const accountId: any = accountDetails?.platform_id;
-
-      if (sellerAccount.platform_id !== accountId) {
+      if (sellerAccount.platform_id?.trim()?.split(' ')?.join('')?.toLowerCase() !== accountId) {
         return res
           .status(StatusCodes.BAD_REQUEST)
           .send(
@@ -232,8 +238,8 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
     // const sheetData = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[1]], { header: 2, range: 1 });
     // const removeNewlinesFromJsonData = jsonCleaner(extractSheetData);
     await Order.bulkWrite(orderDetails);
-    // storeBufferAndObject(excelFile, { removeNewlinesFromJsonData, orderDetails }, 'demoUpload');
-    return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
+    storeBufferAndObject(null, { orderDetails }, 'demoUpload');
+    return res.status(StatusCodes.OK).send(responseGenerators(orderDetails, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
     // eslint-disable-next-line no-console
     console.log('error', error);
@@ -269,17 +275,17 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       range: 1,
     });
     let orderD = [];
+    const orderUpdate = [];
 
     const subOrderNumber = orderDetails[2]['Sub Order No'];
-    // const foundOrder: any = await Order.find({ sub_order_no: subOrderNumber });
-
-    // if (foundOrder.supplier_name !== accountName) {
-    //   return res
-    //     .status(StatusCodes.BAD_REQUEST)
-    //     .send(
-    //       responseGenerators({}, StatusCodes.BAD_REQUEST, `The payment sheet does not belong to ${accountName}`, true),
-    //     );
-    // }
+    const foundOrder: any = await Order.findOne({ sub_order_no: subOrderNumber }).lean();
+    if (foundOrder.supplier_name !== accountName) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, `The payment sheet does not belong to ${accountName}`, true),
+        );
+    }
 
     const paymentOrderData = await PaymentOrders.findOne({ subOrderNo: subOrderNumber });
 
@@ -395,10 +401,18 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
           document: paymentOrderObj,
         },
       });
+      orderUpdate.push({
+        order_status: status,
+        order_price: String(paymentOrderObj.finalSettlementAmount),
+        sub_order_no: data['Sub Order No']?.trim(),
+      });
     }
     orderD.shift();
     await PaymentOrders.bulkWrite(orderD);
-    return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
+    storeBufferAndObject(null, { orderD, orderUpdate }, 'payment_sheet_');
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators({ orderD, orderUpdate }, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
     // eslint-disable-next-line no-console
     console.log('error', error);
@@ -439,36 +453,38 @@ export const returnOrder = async (req: Request, res: Response) => {
 
     const orders = XLSX.utils.sheet_to_json(file.Sheets[sheetNameList[0]], { header: headerRange, range: headerRange });
     const orderD = [];
+    const orderUpdate = [];
+    const totalReturnExtractData = [];
     for (const order of orders) {
       const findOrderData = await ReturnOrder.findOne({ sub_order_no: order['Suborder Number'] });
+      const orderInsertData = {
+        return_order_id: generatePublicId(),
+        product_name: order['Product Name'],
+        sku: order['SKU'],
+        variation: order['Variation'],
+        meesho_pid: order['Meesho PID'],
+        Qty: order['Qty'],
+        category: order['Order Number'],
+        order_number: order['Order Number'],
+        sub_order_no: order['Suborder Number'],
+        order_date: order['Order Date'],
+        dispatch_date: order['Dispatch Date'],
+        return_created_date: order['Return Created Date'],
+        type_of_return: order['Type of Return'],
+        sub_type: order['Sub Type'],
+        expected_delivery_date: order['Expected Delivery Date'],
+        courier_partner: order['Courier Partner'],
+        awb_number: order['AWB Number'],
+        status: order['Status'],
+        attempt: order['Attempt'],
+        tracking_link: order['Tracking Link'],
+        return_reason: order['Return Reason'],
+        detailed_return_reason: order['Detailed Return Reason'],
+        created_at: setTimesTamp(),
+        sheetId,
+      };
+      totalReturnExtractData.push(orderInsertData);
       if (!findOrderData) {
-        const orderInsertData = {
-          return_order_id: generatePublicId(),
-          product_name: order['Product Name'],
-          sku: order['SKU'],
-          variation: order['Variation'],
-          meesho_pid: order['Meesho PID'],
-          Qty: order['Qty'],
-          category: order['Order Number'],
-          order_number: order['Order Number'],
-          sub_order_no: order['Suborder Number'],
-          order_date: order['Order Date'],
-          dispatch_date: order['Dispatch Date'],
-          return_created_date: order['Return Created Date'],
-          type_of_return: order['Type of Return'],
-          sub_type: order['Sub Type'],
-          expected_delivery_date: order['Expected Delivery Date'],
-          courier_partner: order['Courier Partner'],
-          awb_number: order['AWB Number'],
-          status: order['Status'],
-          attempt: order['Attempt'],
-          tracking_link: order['Tracking Link'],
-          return_reason: order['Return Reason'],
-          detailed_return_reason: order['Detailed Return Reason'],
-          created_at: setTimesTamp(),
-          sheetId,
-        };
-
         const updateOrder = await Order.findOneAndUpdate(
           { sub_order_no: orderInsertData.sub_order_no },
           {
@@ -485,11 +501,21 @@ export const returnOrder = async (req: Request, res: Response) => {
         );
         if (updateOrder) {
           orderD.push(orderInsertData);
+          orderUpdate.push({
+            sub_order_no: orderInsertData.sub_order_no,
+            awb_number: orderInsertData.awb_number,
+            order_status:
+              orderInsertData.type_of_return === 'Courier Return (RTO)' ? 'currierReturn' : 'customerReturn',
+            return_currier_partner: orderInsertData.courier_partner,
+          });
         }
       }
     }
     const data = await ReturnOrder.insertMany(orderD);
-    return res.status(StatusCodes.OK).send(responseGenerators(data, StatusCodes.OK, ORDER.CREATED, false));
+    storeBufferAndObject(null, { data, orderD, orderUpdate, totalReturnExtractData }, 'return_upload_');
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators({ orderD, orderUpdate, totalReturnExtractData }, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)

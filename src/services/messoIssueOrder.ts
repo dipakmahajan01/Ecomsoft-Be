@@ -5,7 +5,7 @@ import Order from '../model/sheet_order.model';
 export const createIssueOrder = async () => {
   try {
     await Order.updateMany(
-      { created_at: { $lte: await date15DaysAgo() }, is_return_update: false },
+      { order_date: { $lte: await date15DaysAgo() }, is_return_update: false },
       { $set: { is_order_issue: true } },
     );
   } catch (error) {

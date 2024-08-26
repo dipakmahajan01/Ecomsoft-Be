@@ -8,7 +8,7 @@ const port = process.env.PORT || 8081;
 /** Connect to Mongo */
 (async () => {
   try {
-    if (await mongooseConnection()) {
+    if (await mongooseConnection(null)) {
       // initializeFirebase();
       console.time(`⚡️ server started with 👍🏼 database connected http://localhost:${port} in `);
       server.listen(port, () => {

@@ -94,6 +94,7 @@
     "src",
     ".eslintrc.js",
     "server.ts",
+    "jest.config.ts",
     "./cron-job"
   ],
 }

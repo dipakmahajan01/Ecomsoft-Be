@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 // Define the interface
-interface IOrder extends Document {
+export interface IOrder extends Document {
   subOrderNo: string;
   orderDate: string;
   dispatchDate: string;

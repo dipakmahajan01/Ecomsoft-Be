@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "test": "jest --detectOpenHandles",
     "prebuild": "rimraf dist",
     "start": "node build/server.js",
     "dev": "nodemon  server.ts",
@@ -13,7 +14,6 @@
     "dist": "sh ./scripts/build.sh",
     "server": "tsc-watch --outDir ./build --onSuccess \"npm run start -- --mode=http\" --onFailure \"echo ERROR! Compilation Failed\"",
     "debug": "tsc-watch --outDir ./build --onSuccess \"npm run runDebug -- --mode=http \" --onFailure \"echo ERROR! Compilation Failed\"",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall-production": "echo \"production, skipping...\"",
     "postinstall-dev": "git config core.hooksPath ./git-hooks",
     "postinstall": "if-env NODE_ENV=production && npm run postinstall-production || npm run postinstall-dev || true",
@@ -58,7 +58,9 @@
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/ioredis": "^4.28.1",
+    "@types/jest": "^29.5.12",
     "@types/jsonwebtoken": "^9.0.5",
+    "@types/lodash": "^4.17.7",
     "@types/multer": "^1.4.11",
     "@types/node": "^16.11.6",
     "@types/node-cron": "^3.0.11",
@@ -72,7 +74,11 @@
     "eslint-config-airbnb-typescript": "^17.1.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "jest": "^29.7.0",
+    "lodash": "^4.17.21",
     "prettier": "^2.7.1",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.4",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4"
   }
