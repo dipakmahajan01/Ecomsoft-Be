@@ -1,1 +1,208 @@
+name: Cron Host Deploy
+# 1
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the master branch
+  push:
+    branches: [ develop, stage, prod ]
+#2
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.15.0
 
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Extract branch name
+        shell: bash
+        run: |
+          echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: generate env
+        run: |
+          touch .env
+          BRANCH=${{ steps.extract_branch.outputs.branch }}
+
+          echo "BRANCH=${{ steps.extract_branch.outputs.branch }}" >> $GITHUB_ENV
+          echo $BRANCH
+          if [ "$BRANCH" = "develop" ]
+          then
+            echo "==In dev-phase ENV GENERATION"
+            echo NODE_ENV=${{ secrets.NODE_ENV_DEV }} >> .env
+            echo PORT=${{ secrets.PORT }} >> .env
+            echo DATABASE_CONNECTION_URI_DEV=${{ secrets.DATABASE_CONNECTION_URI_DEV }} >> .env
+            echo MATCH_ODDS_DATABASE_CONNECTION_URL=${{ secrets.MATCH_ODDS_DATABASE_CONNECTION_URL }} >> .env
+            echo EXPIRED_IN=${{ secrets.EXPIRED_IN_DEV }} >> .env
+            echo REFRESH_EXPIRED_IN=${{ secrets.REFRESH_EXPIRED_IN_DEV }} >> .env
+            echo SECRET_KEY=${{ secrets.SECRET_KEY_DEV }} >> .env
+            echo REDIS_URL=${{ secrets.REDIS_URL_DEV }} >> .env
+            echo REDIS_PORT=${{ secrets.REDIS_PORT_DEV }} >> .env
+            echo IS_JOB=${{ secrets.IS_JOB }} >> .env
+            echo BUCKET_NAME=${{ secrets.BUCKET_NAME_DEV }} >> .env
+            echo S3_ACCESS_ID=${{ secrets.S3_ACCESS_ID_DEV }} >> .env
+            echo S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY_DEV }} >> .env
+            echo AWS_REGION=${{ secrets.AWS_REGION_DEV }} >> .env
+            echo IS_ENCODING=${{ secrets.ISENCODINGDEV }} >> .env
+            echo DD_ENV=${{ secrets.DD_ENV_DEV }} >> .env
+            echo DD_LOGS_INJECTION=${{ secrets.DD_LOGS_INJECTION_DEV }} >> .env
+            echo DD_APPSEC_ENABLED=${{ secrets.DD_APPSEC_ENABLED_DEV }} >> .env
+            echo DD_IAST_ENABLED=${{ secrets.DD_IAST_ENABLED_DEV }} >> .env
+            echo DD_API_KEY=${{ secrets.DD_API_KEY_DEV }} >> .env
+
+          elif [ "$BRANCH" = "stage" ]
+          then
+            echo ">>>>In stage-phase ENV GENERATION"
+            echo NODE_ENV=${{ secrets.NODE_ENV_STAGE }} >> .env
+            echo PORT=${{ secrets.PORT }} >> .env
+            echo DATABASE_CONNECTION_URI_STAGE=${{ secrets.DATABASE_CONNECTION_URI_STAGE }} >> .env
+            echo MATCH_ODDS_DATABASE_CONNECTION_URL=${{ secrets.MATCH_ODDS_DATABASE_CONNECTION_URL }} >> .env
+            echo EXPIRED_IN=${{ secrets.EXPIRED_IN_STAGE }} >> .env
+            echo REFRESH_EXPIRED_IN=${{ secrets.REFRESH_EXPIRED_IN_STAGE }} >> .env
+            echo SECRET_KEY=${{ secrets.SECRET_KEY_STAGE }} >> .env
+            echo REDIS_URL=${{ secrets.REDIS_URL_STAGE }} >> .env
+            echo REDIS_PORT=${{ secrets.REDIS_PORT_STAGE }} >> .env
+            echo IS_JOB=${{ secrets.IS_JOB }} >> .env
+            echo BUCKET_NAME=${{ secrets.BUCKET_NAME_STAGE }} >> .env
+            echo S3_ACCESS_ID=${{ secrets.S3_ACCESS_ID_STAGE }} >> .env
+            echo S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY_STAGE }} >> .env
+            echo AWS_REGION=${{ secrets.AWS_REGION_STAGE }} >> .env
+            echo DD_ENV=${{ secrets.DD_ENV_STAGE }} >> .env
+            echo DD_LOGS_INJECTION=${{ secrets.DD_LOGS_INJECTION_DEV }} >> .env
+            echo DD_APPSEC_ENABLED=${{ secrets.DD_APPSEC_ENABLED_DEV }} >> .env
+            echo DD_IAST_ENABLED=${{ secrets.DD_IAST_ENABLED_DEV }} >> .env
+            echo DD_API_KEY=${{ secrets.DD_API_KEY_DEV }} >> .env
+
+          elif [ "$BRANCH" = "prod" ]
+          then
+            echo "<<<<<<In pro-phase ENV GENERATION"
+            echo NODE_ENV=${{ secrets.NODE_ENV_PROD }} >> .env
+            echo PORT=${{ secrets.PORT }} >> .env
+            echo DATABASE_CONNECTION_URI_PROD=${{ secrets.DATABASE_CONNECTION_URI_PROD }} >> .env
+            echo MATCH_ODDS_DATABASE_CONNECTION_URL=${{ secrets.MATCH_ODDS_DATABASE_CONNECTION_URL }} >> .env
+            echo EXPIRED_IN=${{ secrets.EXPIRED_IN_PROD }} >> .env
+            echo REFRESH_EXPIRED_IN=${{ secrets.REFRESH_EXPIRED_IN_PROD }} >> .env
+            echo SECRET_KEY=${{ secrets.SECRET_KEY_PROD }} >> .env
+            echo REDIS_URL=${{ secrets.REDIS_URL_PROD }} >> .env
+            echo REDIS_PORT=${{ secrets.REDIS_PORT_PROD }} >> .env
+            echo IS_JOB=${{ secrets.IS_JOB }} >> .env
+            echo S3_ACCESS_ID=${{ secrets.S3_ACCESS_ID_PROD }} >> .env
+            echo S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY_PROD }} >> .env
+            echo BUCKET_NAME=${{ secrets.BUCKET_NAME_PROD }} >> .env
+            echo AWS_REGION=${{ secrets.AWS_REGION_PROD }} >> .env
+            echo DD_ENV=${{ secrets.DD_ENV_PROD }} >> .env
+            echo DD_LOGS_INJECTION=${{ secrets.DD_LOGS_INJECTION_PROD }} >> .env
+            echo DD_APPSEC_ENABLED=${{ secrets.DD_APPSEC_ENABLED_PROD }} >> .env
+            echo DD_IAST_ENABLED=${{ secrets.DD_IAST_ENABLED_PROD }} >> .env
+            echo DD_API_KEY=${{ secrets.DD_API_KEY_DEV }} >> .env
+            
+          else
+            echo "DEPLOY=false" >> $GITHUB_ENV
+          fi
+
+          ls -a
+          cat .env
+
+      - name: npm build
+        run: |
+          npm run build
+
+      - if: ${{ env.BRANCH == 'stage' }}
+        name: branch detection
+        run: echo "$BRANCH"
+
+      - if: ${{ env.BRANCH == 'prod' }}
+        name: branch detection
+        run: echo "$BRANCH"
+        
+      - if: ${{ env.BRANCH == 'develop' }}
+        name: branch detection
+        run: echo "$BRANCH"
+
+      - if: ${{ env.BRANCH == 'develop' }}
+        name: Deploy to Server-DEV, Skipped if branch to the code is not develop
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.REMOTE_SSH_KEY_DEV }}
+          #ARGS: "-rltgoDzvO --delete"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST_CRON_DEV }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER_DEV }}
+          TARGET: /home/ubuntu/betfair-be/
+
+
+      - if: ${{ env.BRANCH == 'stage' }}
+        name: Deploy to Server-Stage, Skipped if branch to the code is not stage
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.REMOTE_SSH_KEY_STAGE }}
+          #ARGS: "-rltgoDzvO --delete"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST_CRON_STAGE }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER_STAGE }}
+          TARGET: /home/ubuntu/betfair-be/
+
+      - if: ${{ env.BRANCH == 'prod' }}
+        name: Deploy to Server-PROD, Skipped if branch to the code is not prod
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.REMOTE_SSH_KEY_PROD }}
+          #ARGS: "-rltgoDzvO --delete"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST_CRON_PROD }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER_PROD }}
+          TARGET: /home/ubuntu/betfair-be/
+
+
+      - if: ${{ env.BRANCH == 'develop' }}
+        name: executing remote ssh commands-DEV, Skipped if branch to the code is not develop
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST_CRON_DEV }}
+          username: ${{ secrets.REMOTE_USER_DEV }}
+          key: ${{ secrets.REMOTE_SSH_KEY_DEV }}
+          port: 22
+          script: |
+            cd ~/betfair-be
+            npm i
+            pm2 stop betfair-be || true
+            pm2 reload betfair-be || pm2 start -n betfair-be npm -- start
+
+
+      - if: ${{ env.BRANCH == 'stage' }}
+        name: executing remote ssh commands-Stage, Skipped if branch to the code is not stage
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST_CRON_STAGE }}
+          username: ${{ secrets.REMOTE_USER_STAGE }}
+          key: ${{ secrets.REMOTE_SSH_KEY_STAGE }}
+          port: 22
+          script: |
+            cd ~/betfair-be
+            npm i
+            pm2 stop betfair-be || true
+            pm2 reload betfair-be || pm2 start -n betfair-be npm -- start
+
+      - if: ${{ env.BRANCH == 'prod' }}
+        name: executing remote ssh commands-PROD, Skipped if branch to the code is not prod
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST_CRON_PROD }}
+          username: ${{ secrets.REMOTE_USER_PROD }}
+          key: ${{ secrets.REMOTE_SSH_KEY_PROD }}
+          port: 22
+          script: |
+            cd ~/betfair-be
+            npm i
+            pm2 stop betfair-be || true
+            pm2 reload betfair-be || pm2 start -n betfair-be npm -- start
+
+      - name: final message
+        run: echo "Deployment is complete"
