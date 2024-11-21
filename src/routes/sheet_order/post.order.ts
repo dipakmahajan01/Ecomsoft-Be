@@ -3,6 +3,9 @@
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import AdmZip from 'adm-zip';
+import path from 'path';
+import fs from 'fs';
 import { ITokenData } from '../../services/common.types';
 import { convertIntoUnix, generatePublicId, setTimesTamp, setTimesTampNano } from '../../common/common-function';
 import { jsonCleaner, responseGenerators } from '../../lib';
@@ -245,7 +248,6 @@ export const uploadOrderSheetHandler = async (req: Request, res: Response) => {
 
 export const paymentOrderUpload = async (req: Request, res: Response) => {
   try {
-    const fileLocation: any = req.file?.buffer;
     const { account_name: accountName } = req.body;
     const accountDetails: any = await sellerAccounts.findOne({ account_name: accountName }).lean();
     if (!accountDetails) {
@@ -253,8 +255,12 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         .status(StatusCodes.NOT_FOUND)
         .send(responseGenerators({}, StatusCodes.NOT_FOUND, 'account not found', true));
     }
-
-    const file = XLSX.read(fileLocation);
+    const zipFilePath = req.file.buffer;
+    const extractedPath = path.join(__dirname, 'uploads', req.file.originalname);
+    const zip = new AdmZip(zipFilePath);
+    zip.extractAllTo(extractedPath, true);
+    const files = fs.readdirSync(extractedPath);
+    const file = XLSX.readFile(path.join(extractedPath, files[0]));
     const sheetNameList: any = file.SheetNames;
 
     const [firstSheetName] = sheetNameList ?? [];
