@@ -23,7 +23,7 @@ Clone the Repository
 
 bash
 Copy code
-git clone https://github.com/your-username/ecomsoft-be.git
+git clone https://github.com/dipakmahajan01/Ecomsoft-Be.git
 cd ecomsoft-be
 Install Dependencies
 
