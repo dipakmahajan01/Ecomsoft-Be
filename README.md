@@ -1,4 +1,5 @@
 Ecomsoft-Be
+
 Ecomsoft-Be is an open-source e-commerce backend project built using modern web technologies. The current tech stack includes:
 
 Frontend: React, Next.js
