@@ -3,13 +3,18 @@ Ecomsoft-Be
 Ecomsoft-Be is an open-source e-commerce backend project built using modern web technologies. The current tech stack includes:
 
 Frontend: React, Next.js
+
 Backend: Node.js, Express.js
+
 Database: MongoDB with Mongoose ORM
+
 Languages: TypeScript, JavaScript
+
 Features
 Fully customizable e-commerce backend system
 Modular and scalable architecture
-Upcoming feature: Order-wise analytics
+Upcoming feature: Order analytics
+
 Getting Started
 Follow the instructions below to set up and run the project on your local machine.
 
