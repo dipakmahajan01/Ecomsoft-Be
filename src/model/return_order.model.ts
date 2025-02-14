@@ -17,7 +17,7 @@ const returnOrderSchema = new Schema(
     return_created_date: { type: Date },
     type_of_return: { type: String },
     sub_type: { type: String },
-    expected_delivery_date: { type: Date },
+    expected_delivery_date: { type: String },
     courier_partner: { type: String },
     awb_number: { type: String },
     status: { type: String },

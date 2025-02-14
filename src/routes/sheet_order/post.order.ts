@@ -1,5 +1,6 @@
 /* eslint-disable no-continue */
-/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable */
+
 import XLSX from 'xlsx';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
@@ -46,8 +47,8 @@ const API_KEY = process.env.PDF_REST_API_KEY;
 //   const objFilePath = `${filePath + generateFileName('json')}.json`;
 //   fs.writeFileSync(objFilePath, JSON.stringify(obj, null, 2));
 // }
-
-function isSubstringInArray(substring: string, array: string[] = []): boolean {
+// eslint-disable-next-line
+function isSubstringInArray(substring: string, array: string[] = []) {
   for (const str of array) {
     if (str?.toLowerCase()?.includes(substring.toLowerCase())) {
       return true;
@@ -275,7 +276,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
       range: 1,
     });
     let orderD = [];
-
+    console.log('orderDetails', orderDetails[1]);
     const subOrderNumber = orderDetails[2]['Sub Order No'];
     // const foundOrder: any = await Order.find({ sub_order_no: subOrderNumber });
 
@@ -438,12 +439,11 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
         });
       }
     }
-    orderD.shift();
+    // orderD.shift();
     await PaymentOrders.bulkWrite(orderD);
     return res.status(StatusCodes.OK).send(responseGenerators({}, StatusCodes.OK, ORDER.CREATED, false));
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.log('error', error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, false));
