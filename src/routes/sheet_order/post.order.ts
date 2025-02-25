@@ -409,7 +409,7 @@ export const paymentOrderUpload = async (req: Request, res: Response) => {
           },
           {
             $set: {
-              order_status: paymentOrderObj?.liveOrderStatus,
+              order_status: status,
               order_price: paymentOrderObj?.finalSettlementAmount,
               is_claim: paymentOrderObj?.liveOrderStatus ? false : isClaim,
               issue_message:

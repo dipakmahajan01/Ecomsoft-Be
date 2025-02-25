@@ -26,6 +26,7 @@
     "@aws-sdk/client-s3": "^3.635.0",
     "adm-zip": "^0.5.16",
     "axios": "^1.6.2",
+    "babel-eslint": "^10.1.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.1",

@@ -195,7 +195,6 @@ import { setPagination } from '../../common/common-function';
 //       .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, ERROR.INTERNAL_SERVER_ERROR, true));
 //   }
 // };
-
 export const returnOrderHandler = async (req: Request, res: Response) => {
   try {
     const { error } = returnOrderSchema.validate(req.query);
@@ -358,34 +357,38 @@ export const getSellerAnalyticsHandler = async (req: Request, res: Response) => 
       },
       {
         $group: {
-          _id: 'null',
+          _id: null,
           totalOrder: { $sum: 1 },
-          totalReturn: { $sum: { $cond: [{ $eq: ['$is_return_update', true] }, 1, 0] } },
+          totalReturn: {
+            $sum: { $cond: [{ $eq: ['$is_return_update', true] }, 1, 0] },
+          },
           totalProfit: {
             $sum: {
-              $cond: [{ $eq: ['$order_status', 'completed'] }, '$orderDetails.finalSettlementAmount', 0],
+              $cond: [{ $eq: ['$order_status', 'completed'] }, { $toDouble: '$orderDetails.finalSettlementAmount' }, 0],
             },
           },
           totalExchangeAmount: {
             $sum: {
-              $cond: [{ $eq: ['$order_status', 'exchange'] }, '$orderDetails.finalSettlementAmount', 0],
+              $cond: [{ $eq: ['$order_status', 'exchange'] }, { $toDouble: '$order_price' }, 0],
             },
           },
           totalSippedAmount: {
             $sum: {
-              $cond: [{ $eq: ['$order_status', 'shipped'] }, '$orderDetails.finalSettlementAmount', 0],
+              $cond: [{ $eq: ['$order_status', 'shipped'] }, { $toDouble: '$order_price' }, 0],
             },
           },
           totalCustomerReturnLoss: {
             $sum: {
-              $cond: [{ $eq: ['$order_status', 'customerReturn'] }, '$orderDetails.finalSettlementAmount', 0],
+              $cond: [{ $eq: ['$order_status', 'customerReturn'] }, { $toDouble: '$order_price' }, 0],
             },
           },
           totalCustomerReturn: {
             $sum: {
               $cond: [
-                { $and: [{ $eq: ['$order_status', 'customerReturn'] }, { $ne: [{ $type: '$price' }, 'missing'] }] },
-                1,
+                {
+                  $and: [{ $eq: ['$order_status', 'customerReturn'] }, { $ne: [{ $type: '$price' }, 'missing'] }],
+                },
+                { $toDouble: '$orderDetails.finalSettlementAmount' },
                 0,
               ],
             },
@@ -393,7 +396,9 @@ export const getSellerAnalyticsHandler = async (req: Request, res: Response) => 
           totalCurrieReturn: {
             $sum: {
               $cond: [
-                { $and: [{ $eq: ['$order_status', 'courierReturn'] }, { $ne: [{ $type: '$price' }, 'missing'] }] },
+                {
+                  $and: [{ $eq: ['$order_status', 'courierReturn'] }],
+                },
                 1,
                 0,
               ],

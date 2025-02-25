@@ -16,7 +16,7 @@ const orderSchema = new Schema({
   created_at: { type: String },
   is_deleted: { type: Boolean },
   is_return_update: { type: Boolean, default: false },
-  is_order_issue: { type: Boolean, default: false },
+  is_order_issue: { type: Boolean },
   issue_message: { type: String },
   updated_at: { type: String },
   awb_number: { type: String },
