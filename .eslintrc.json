@@ -2,7 +2,7 @@
   "parserOptions": {
     "project": "tsconfig.json",
     "sourceType": "module",
-    "ecmaVersion": "es2017"
+    "ecmaVersion": 2017
   },
   "plugins": [
     "@typescript-eslint/eslint-plugin"
