@@ -1,5 +1,5 @@
-import { StatusCodes } from 'http-status-codes';
 import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { ERROR, ITokenData, ORDER } from '../../common/global-constants';
 import { logsError, responseGenerators } from '../../lib';
 import sellerAccounts from '../../model/seller_accounts.model';
@@ -199,6 +199,7 @@ import { setPagination } from '../../common/common-function';
 export const returnOrderHandler = async (req: Request, res: Response) => {
   try {
     const { error } = returnOrderSchema.validate(req.query);
+
     if (error) {
       return res
         .status(StatusCodes.BAD_REQUEST)
